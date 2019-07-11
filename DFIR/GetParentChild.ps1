@@ -1,4 +1,6 @@
-﻿$CmdLineHeader = "New Process Name:`t"
+#some theory and tips: https://medium.com/@grzegorztworek/bad-parenting-5a8d43bf0b7b
+
+$CmdLineHeader = "New Process Name:`t"
 $ParentHeader = "Creator Process Name:`t"
 
 #this may take some time...
