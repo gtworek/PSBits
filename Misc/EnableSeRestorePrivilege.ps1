@@ -95,6 +95,7 @@ function Enable-SeRestorePrivilege {
 	$LastError = [Kernel32]::GetLastError()
 	Write-Debug "GetLastError returned: $LastError"
     #0 - OK.
+    #6 - one of previous steps failed. Observe the output for handles equal to 0 or just re-run entire script.
     #1300 - privilege not held
 
 }
