@@ -3,15 +3,17 @@ function Enable-SeRestorePrivilege {
 .SYNOPSIS
     
 	Enables SeRestorePrivilege for the current (powershell/ise) process.
-	It allows you to manipulate ACL-protected files using the same console.
+	It allows you to overwrite ACL-protected files using the same console.
 
-	You have to have the privilege in your token first - check it with "whoami /priv" if not sure
+	You have to have the privilege in your token first - check it with "whoami /priv" if not sure.
+	
+	The full scenario for taking admin rights is described at https://github.com/gtworek/Priv2Admin under "SeRestore" section.
     
 .DESCRIPTION
 	Author: Grzegorz Tworek
 	Required Dependencies: None
 	Optional Dependencies: None
-    
+	    
 .EXAMPLE
 	C:\PS> Enable-SeRestorePrivilege
 #>
