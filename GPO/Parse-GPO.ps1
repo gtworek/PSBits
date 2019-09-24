@@ -177,7 +177,7 @@ else
     } 
 #ProcessGptTmpl
 
-#POL - processed via external script using variables ($file,$arrtmp2) instead of function. Maybe it will be changed in the future
+#POL - ??
 if ($ProcessPolFiles)
     {
     $UsePolParser = Test-Path ".\Parse-PolicyFile.ps1" #feel free to enable/disable parser, by default it depends if the parser script exists
@@ -192,8 +192,7 @@ if ($ProcessPolFiles)
         $knownfiles += $file
         if ($UsePolParser)
             {
-            . .\Parse-PolicyFile.ps1 
-            $arrtmp += $arrtmp2    
+            ###
             }
         }
     foreach ($file in $knownfiles)
