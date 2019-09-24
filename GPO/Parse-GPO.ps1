@@ -1,3 +1,4 @@
+#region Variables
 $DebugPreference = "SilentlyContinue" ##Continue or SilentlyContinue if you do not like to observe filenames during the process.
 $GpoRoot = ($env:LOGONSERVER)+"\sysvol\"
 $DestFolder = ($env:USERPROFILE)+"\desktop\gpoflat\"
@@ -16,6 +17,7 @@ $ProcessEmpty = $true
 
 $MoveProcessedFiles = $true
 $GrabFiles = $false
+#endregion Variables
 
 #let's start
 if ($GrabFiles)
@@ -85,7 +87,12 @@ if ($ProcessGPT)
         }
 
     $arrtmp | Out-GridView -Title "GPT.INI Versions"
-    } #ProcessGPT
+    } 
+else
+    {
+    Write-Host "Skipping GPT" -ForegroundColor Magenta    
+    } 
+#ProcessGPT
 
 #ADM - name, MD5, size, LastWriteTime
 if ($ProcessADMFiles)
@@ -118,7 +125,12 @@ if ($ProcessADMFiles)
         }
 
     $arrtmp | Out-GridView -Title "ADM Files"
-    } #ProcessADMFiles
+    } 
+else
+    {
+    Write-Host "Skipping ADM" -ForegroundColor Magenta    
+    } 
+#ProcessADMFiles
 
 #secedit_gpttmpl.inf - report sections.
 if ($ProcessGptTmpl)
@@ -158,11 +170,17 @@ if ($ProcessGptTmpl)
         }
 
     $arrtmp | Out-GridView -Title "GptTmpl.inf settings"
-    } #ProcessGptTmpl
+    } 
+else
+    {
+    Write-Host "Skipping GPTTmpl" -ForegroundColor Magenta    
+    } 
+#ProcessGptTmpl
 
 #POL - ??
 if ($ProcessPolFiles)
     {
+    $UsePolParser = Test-Path ".\Parse-PolicyFile.ps1" #feel free to enable/disable parser, by default it depends if the parser script exists
     $arrtmp=@()
     foreach ($file in $allfiles)
         {
@@ -172,13 +190,10 @@ if ($ProcessPolFiles)
             }
         Write-Debug -Message ("[Registry.pol] "+$file.fullname)
         $knownfiles += $file
-    #    $row = New-Object psobject
-    #    $row | Add-Member -Name FullName -MemberType NoteProperty -Value $file.FullName
-    #    $row | Add-Member -Name LastPartOfName -MemberType NoteProperty -Value (($file.FullName -split "_")[-1]) #makes browsing the result a bit nicer
-    #    $row | Add-Member -Name MD5 -MemberType NoteProperty -Value ((Get-FileHash -Algorithm MD5 -Path $file.FullName).Hash)
-    #    $row | Add-Member -Name Size -MemberType NoteProperty -Value ($file.Length)
-    #    $row | Add-Member -Name LastWriteTime -MemberType NoteProperty -Value ($file.LastWriteTime)
-    #    $arrtmp += $row
+        if ($UsePolParser)
+            {
+            ###
+            }
         }
     foreach ($file in $knownfiles)
         {
@@ -189,8 +204,13 @@ if ($ProcessPolFiles)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "Regsitry.pol"
-    } #ProcessPolFiles
+    $arrtmp | Out-GridView -Title "Registry.pol"
+    } 
+else
+    {
+    Write-Host "Skipping POL Files" -ForegroundColor Magenta    
+    } 
+#ProcessPolFiles
 
 #GPE.INI - just look if anything strange sticks out
 if ($ProcessGPEINI)
@@ -228,7 +248,12 @@ if ($ProcessGPEINI)
             }
         $allfiles.Remove($file)
         }
-    } #GPE.INI
+    } 
+else
+    {
+    Write-Host "Skipping GPE.INI" -ForegroundColor Magenta    
+    } 
+#GPE.INI
 
 #cmtx - report namespaces and resources (comments).
 if ($ProcessCmtx)
@@ -271,8 +296,12 @@ if ($ProcessCmtx)
         }
 
     $arrtmp | Out-GridView -Title "CMTX content"
-    } #cmtx
-
+    } 
+else
+    {
+    Write-Host "Skipping CMTX" -ForegroundColor Magenta    
+    } 
+#cmtx
 
 #Scripts - report for name, length and passwordexists
 if ($ProcessScripts)
@@ -313,7 +342,11 @@ if ($ProcessScripts)
         }
     $arrtmp | Out-GridView -Title "Scripts"
     } #scripts
-
+else
+    {
+    Write-Host "Skipping scripts" -ForegroundColor Magenta    
+    } 
+#Scripts
 
 #admfiles.ini - report section different than [FileList], report files on filelist.
 if ($ProcessAdmfiles)
@@ -405,7 +438,7 @@ if ($ProcessFdeploy1ini)
     }
 else
     {
-    Write-Host "Skipping fdeploy.ini" -ForegroundColor Magenta    
+    Write-Host "Skipping fdeploy1.ini" -ForegroundColor Magenta    
     } 
 #fdeploy1.ini
 
