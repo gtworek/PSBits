@@ -1,5 +1,5 @@
 #region Variables
-$DebugPreference = "SilentlyContinue" ##Continue or SilentlyContinue if you do not like to observe filenames during the process.
+$DebugPreference = "Continue" ##Continue or SilentlyContinue if you do not like to observe filenames during the process.
 $GpoRoot = ($env:LOGONSERVER)+"\sysvol\"
 $DestFolder = ($env:USERPROFILE)+"\desktop\gpoflat\"
 
