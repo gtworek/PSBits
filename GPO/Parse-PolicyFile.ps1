@@ -38,7 +38,6 @@ if (Test-Path ($file2.FullName))
         #assuming all pol files are unicode. let me know if you find different one.
         $polbytes = $polbytes[8..($polbytes.Count)]
         $PolStrings = [System.Text.Encoding]::Unicode.GetString($polbytes)
-        $PolStrings = $PolStrings[0..($PolStrings.Length-3)]
         foreach ($polstrtmp in ($PolStrings -split "\["))
             {
             $polstrtmp2 = $polstrtmp -split ";"
