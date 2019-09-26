@@ -139,11 +139,17 @@ if (Test-Path ($polFile.FullName))
                             {
                             if (($polrow.Type -eq "REG_MULTI_SZ") -or ($polrow.Type -eq "REG_SZ") -or ($polrow.Type -eq "REG_EXPAND_SZ"))
                                 {
+                                while (!(($poldata[($poldata.Count-1)]) -or ($poldata[($poldata.Count-2)]))) #if double \0 at the end
+                                    {
+                                    $poldata = $poldata[0..($poldata.Count-3)]
+                                    }
+                                <#
                                 $poldata = $poldata[0..($poldata.Count-3)]
                                 if ($polrow.Type -eq "REG_MULTI_SZ") #multi is terminated with double\0 Requires more research
                                     {
                                     $poldata = $poldata[0..($poldata.Count-3)]
                                     }
+                                #>
                                 $polrow.Data = ([System.Text.Encoding]::Unicode.GetString($poldata))
                                 }
                             if ($polrow.Type -eq "REG_DWORD")
