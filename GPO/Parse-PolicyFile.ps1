@@ -19,22 +19,22 @@ if (Test-Path ($polFile.FullName))
         Write-Host ("[??? POL] Not looking like POL file "+$polFile.FullName) -ForegroundColor Red
         $polrow = New-Object psobject
         $polrow | Add-Member -Name "FullName" -MemberType NoteProperty -Value $polFile.FullName
-        $polrow | Add-Member -Name "Root" -MemberType NoteProperty -Value "???"
+        $polrow | Add-Member -Name "Hive" -MemberType NoteProperty -Value "???"
         $polrow | Add-Member -Name "Key" -MemberType NoteProperty -Value "???"
         $polrow | Add-Member -Name "Value" -MemberType NoteProperty -Value "???"
         $polrow | Add-Member -Name "Data" -MemberType NoteProperty -Value "???"
         }
     else
         {
-        #Root (HKLM/HKCU) to be determined from name, ? for unknown. stupid but works
-        $POLroot = "?"
+        #Hive (HKLM/HKCU) to be determined from name, ? for unknown. stupid but works
+        $POLHive = "?"
         if ($polFile.FullName -like "*}_Machine_Registry.pol")
             {
-            $POLroot = "HKLM"
+            $POLHive = "HKLM"
             }
         if ($polFile.FullName -like "*}_User_Registry.pol")
             {
-            $POLroot = "HKCU"
+            $POLHive = "HKCU"
             }
         #[key;value;type;size;data] 
         $polbytes = $polbytes[8..($polbytes.Count)]
@@ -45,7 +45,7 @@ if (Test-Path ($polFile.FullName))
 
             $polrow = New-Object psobject
             $polrow | Add-Member -Name "FullName" -MemberType NoteProperty -Value $polFile.FullName
-            $polrow | Add-Member -Name "Root" -MemberType NoteProperty -Value $POLroot
+            $polrow | Add-Member -Name "Hive" -MemberType NoteProperty -Value $POLHive
             $polrow | Add-Member -Name "Key" -MemberType NoteProperty -Value "??"
             $polrow | Add-Member -Name "Value" -MemberType NoteProperty -Value "??"
             $polrow | Add-Member -Name "Type" -MemberType NoteProperty -Value "??"
@@ -142,6 +142,10 @@ if (Test-Path ($polFile.FullName))
                                 while (!(($poldata[($poldata.Count-1)]) -or ($poldata[($poldata.Count-2)]))) #if double \0 at the end
                                     {
                                     $poldata = $poldata[0..($poldata.Count-3)]
+                                    if ($poldata.Count -le 4)
+                                        {
+                                        break
+                                        }
                                     }
                                 <#
                                 $poldata = $poldata[0..($poldata.Count-3)]
@@ -165,7 +169,7 @@ if (Test-Path ($polFile.FullName))
                         $arrtmp2 += $polrow
                         $polrow = New-Object psobject #re-init data for row
                         $polrow | Add-Member -Name "FullName" -MemberType NoteProperty -Value $polFile.FullName
-                        $polrow | Add-Member -Name "Root" -MemberType NoteProperty -Value $POLroot
+                        $polrow | Add-Member -Name "Hive" -MemberType NoteProperty -Value $POLHive
                         $polrow | Add-Member -Name "Key" -MemberType NoteProperty -Value "??"
                         $polrow | Add-Member -Name "Value" -MemberType NoteProperty -Value "??"
                         $polrow | Add-Member -Name "Type" -MemberType NoteProperty -Value "??"
