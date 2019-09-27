@@ -2,6 +2,7 @@
 $DebugPreference = "Continue" ##Continue or SilentlyContinue if you do not like to observe filenames during the process.
 $GpoRoot = ($env:LOGONSERVER)+"\sysvol\"
 $DestFolder = ($env:USERPROFILE)+"\desktop\gpoflat\"
+$CsvSavePath = ($env:USERPROFILE)+"\desktop\gpoflat\"
 
 $ProcessGPT = $true
 $ProcessADMFiles = $true
@@ -9,11 +10,19 @@ $ProcessGptTmpl = $true
 $ProcessPolFiles = $true
 $ProcessGPEINI = $true
 $ProcessCmtx = $true
+$ProcessGPPRegistry = $true
+$ProcessGPPFiles = $true
+$ProcessGPPNTServices = $true
+$ProcessGPPSchTasks = $true
 $ProcessScripts = $true
 $ProcessFdeploy1ini = $true
+$ProcessAuditPolicy = $true
 $ProcessScriptsini = $true
-
 $ProcessEmpty = $true
+
+$DisplayGrids = $true
+$SaveCSVs = $false # setting to true WILL NOT overwrite existing files.
+$DisplayProgress = $true
 
 $MoveProcessedFiles = $true
 $GrabFiles = $false
@@ -85,8 +94,14 @@ if ($ProcessGPT)
             }
         $allfiles.Remove($file)
         }
-
-    $arrtmp | Out-GridView -Title "GPT.INI Versions"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GPT.INI Versions"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__gptini.csv")
+        }
     } 
 else
     {
@@ -123,8 +138,14 @@ if ($ProcessADMFiles)
             }
         $allfiles.Remove($file)
         }
-
-    $arrtmp | Out-GridView -Title "ADM Files"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "ADM Files"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__ADMFiles.csv")
+        }
     } 
 else
     {
@@ -169,7 +190,14 @@ if ($ProcessGptTmpl)
         $allfiles.Remove($file)
         }
 
-    $arrtmp | Out-GridView -Title "GptTmpl.inf settings"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GptTmpl.inf settings"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__gptini.csv")
+        }
     } 
 else
     {
@@ -180,10 +208,17 @@ else
 #POL - parsing in external script, data passed thru variables
 if ($ProcessPolFiles)
     {
-    $UsePolParser = Test-Path ".\Parse-PolicyFile.ps1" #feel free to enable/disable parser, by default it depends if the parser script exists
-    $arrtmp=@()
+    $UsePolParser = Test-Path ".\Parse-PolicyFile.ps1" #feel free to enable/disable parser, by default it depends if the parser script exists or not
+    $arrtmp = @()
+    $progress = 0
     foreach ($file in $allfiles)
         {
+        if ($DisplayProgress)
+            {
+            $progress++
+            Write-Progress -Activity "POL Files" -PercentComplete (100*$progress/$allfiles.Count)
+            }
+
         if ($file.FullName -notlike "*registry.pol")
             {
             continue
@@ -206,7 +241,14 @@ if ($ProcessPolFiles)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "Registry.pol"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "Registry.pol"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__registrypol.csv")
+        }
     } 
 else
     {
@@ -296,14 +338,210 @@ if ($ProcessCmtx)
             }
         $allfiles.Remove($file)
         }
-
-    $arrtmp | Out-GridView -Title "CMTX content"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "CMTX content"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__CMTX.csv")
+        }
     } 
 else
     {
     Write-Host "Skipping CMTX" -ForegroundColor Magenta    
     } 
 #cmtx
+
+#GPP registry
+if ($ProcessGPPRegistry)
+    {
+    $arrtmp=@()
+    foreach ($file in $allfiles)
+        {
+        if ($file.FullName -notlike "*_Preferences_Registry_Registry.xml")
+            {
+            continue
+            }
+        Write-Debug -Message ("[GPP Registry] "+$file.fullname)
+        $knownfiles += $file
+        [xml]$xmlcontent = Get-Content $file.FullName
+        foreach ($namespacetmp in $xmlcontent.RegistrySettings.Registry.properties)
+            {
+            $row = New-Object psobject
+            $row | Add-Member -Name "FullName" -MemberType NoteProperty -Value $file.FullName
+            $row | Add-Member -Name "Action" -MemberType NoteProperty -Value ($namespacetmp.action)
+            $row | Add-Member -Name "Hive" -MemberType NoteProperty -Value ($namespacetmp.hive)
+            $row | Add-Member -Name "Key" -MemberType NoteProperty -Value ($namespacetmp.key)
+            $row | Add-Member -Name "Name" -MemberType NoteProperty -Value ($namespacetmp.name)
+            $row | Add-Member -Name "Type" -MemberType NoteProperty -Value ($namespacetmp.type)
+            $row | Add-Member -Name "Value" -MemberType NoteProperty -Value ($namespacetmp.value)
+            $arrtmp += $row
+            }
+        }
+    foreach ($file in $knownfiles)
+        {
+        if ($MoveProcessedFiles)
+            {
+            mkdir ($DestFolder+"GPP") -ErrorAction Ignore > $null
+            Move-Item $file.FullName ($DestFolder+"GPP") -ErrorAction Ignore
+            }
+        $allfiles.Remove($file)
+        }
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GPP Registry"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__GPPRegistry.csv")
+        }
+    } 
+else
+    {
+    Write-Host "Skipping GPP Registry" -ForegroundColor Magenta    
+    } 
+#GPP Registry
+
+#GPP files
+if ($ProcessGPPFiles)
+    {
+    $arrtmp=@()
+    foreach ($file in $allfiles)
+        {
+        if ($file.FullName -notlike "*_Preferences_Files_Files.xml")
+            {
+            continue
+            }
+        Write-Debug -Message ("[GPP Files] "+$file.fullname)
+        $knownfiles += $file
+        [xml]$xmlcontent = Get-Content $file.FullName
+        foreach ($namespacetmp in $xmlcontent.Files.File.Properties)
+            {
+            $row = New-Object psobject
+            $row | Add-Member -Name "FullName" -MemberType NoteProperty -Value $file.FullName
+            $row | Add-Member -Name "Action" -MemberType NoteProperty -Value ($namespacetmp.action)
+            $row | Add-Member -Name "fromPath" -MemberType NoteProperty -Value ($namespacetmp.fromPath)
+            $row | Add-Member -Name "targetPath" -MemberType NoteProperty -Value ($namespacetmp.targetPath)
+            $arrtmp += $row
+            }
+        }
+    foreach ($file in $knownfiles)
+        {
+        if ($MoveProcessedFiles)
+            {
+            mkdir ($DestFolder+"GPP") -ErrorAction Ignore > $null
+            Move-Item $file.FullName ($DestFolder+"GPP") -ErrorAction Ignore
+            }
+        $allfiles.Remove($file)
+        }
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GPP Files"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__GPPFiles.csv")
+        }
+    } 
+else
+    {
+    Write-Host "Skipping GPP Files" -ForegroundColor Magenta    
+    } 
+#GPP Files
+
+#GPP NTServices
+if ($ProcessGPPNTServices)
+    {
+    $arrtmp=@()
+    foreach ($file in $allfiles)
+        {
+        if ($file.FullName -notlike "*_Preferences_Services_Services.xml")
+            {
+            continue
+            }
+        Write-Debug -Message ("[GPP NTServices] "+$file.fullname)
+        $knownfiles += $file
+        [xml]$xmlcontent = Get-Content $file.FullName
+        foreach ($namespacetmp in $xmlcontent.NTServices.NTService.Properties)
+            {
+            $row = New-Object psobject
+            $row | Add-Member -Name "FullName" -MemberType NoteProperty -Value $file.FullName
+            $row | Add-Member -Name "startupType" -MemberType NoteProperty -Value ($namespacetmp.startupType)
+            $row | Add-Member -Name "serviceName" -MemberType NoteProperty -Value ($namespacetmp.serviceName)
+            $arrtmp += $row
+            }
+        }
+    foreach ($file in $knownfiles)
+        {
+        if ($MoveProcessedFiles)
+            {
+            mkdir ($DestFolder+"GPP") -ErrorAction Ignore > $null
+            Move-Item $file.FullName ($DestFolder+"GPP") -ErrorAction Ignore
+            }
+        $allfiles.Remove($file)
+        }
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GPP NTServices"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__GPPNTServices.csv")
+        }
+    } 
+else
+    {
+    Write-Host "Skipping GPP NTServices" -ForegroundColor Magenta    
+    } 
+#GPP NTServices
+
+#GPP SchTasks
+if ($ProcessGPPSchTasks)
+    {
+    $arrtmp=@()
+    foreach ($file in $allfiles)
+        {
+        if ($file.FullName -notlike "*_Preferences_ScheduledTasks_ScheduledTasks.xml")
+            {
+            continue
+            }
+        Write-Debug -Message ("[GPP SchTasks] "+$file.fullname)
+        $knownfiles += $file
+        [xml]$xmlcontent = Get-Content $file.FullName
+        foreach ($namespacetmp in $xmlcontent.ScheduledTasks.Task.Properties)
+            {
+            $row = New-Object psobject
+            $row | Add-Member -Name "FullName" -MemberType NoteProperty -Value $file.FullName
+            $row | Add-Member -Name "Name" -MemberType NoteProperty -Value ($namespacetmp.name)
+            $row | Add-Member -Name "appName" -MemberType NoteProperty -Value ($namespacetmp.appName)
+            $row | Add-Member -Name "args" -MemberType NoteProperty -Value ($namespacetmp.args)
+            $arrtmp += $row
+            }
+        }
+    foreach ($file in $knownfiles)
+        {
+        if ($MoveProcessedFiles)
+            {
+            mkdir ($DestFolder+"GPP") -ErrorAction Ignore > $null
+            Move-Item $file.FullName ($DestFolder+"GPP") -ErrorAction Ignore
+            }
+        $allfiles.Remove($file)
+        }
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "GPP SchTasks"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__GPPSchTasks.csv")
+        }
+    } 
+else
+    {
+    Write-Host "Skipping GPP SchTasks" -ForegroundColor Magenta    
+    } 
+#GPP SchTasks
 
 #Scripts - report for name, length and passwordexists
 if ($ProcessScripts)
@@ -342,7 +580,14 @@ if ($ProcessScripts)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "Scripts"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "Scripts"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__scripts.csv")
+        }
     } #scripts
 else
     {
@@ -379,7 +624,14 @@ if ($ProcessAdmfiles)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "admfiles.ini"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "admfiles.ini"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__ADMFilesIni.csv")
+        }
     }
 else
     {
@@ -436,13 +688,67 @@ if ($ProcessFdeploy1ini)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "fdeploy1.ini"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "fdeploy1.ini"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__fdeploy1ini.csv")
+        }
     }
 else
     {
     Write-Host "Skipping fdeploy1.ini" -ForegroundColor Magenta    
     } 
 #fdeploy1.ini
+
+#audit policy - taking only subcategory, setting value and the "inclusion setting"
+if ($ProcessAuditPolicy)
+    {
+    $arrtmp=@()
+    foreach ($file in $allfiles)
+        {
+        if ($file.FullName -notmatch "_Machine_Microsoft_Windows NT_Audit_audit\.csv$")
+            {
+            continue
+            }
+        Write-Debug -Message ("[Audit policy] "+$file.fullname)
+        $knownfiles += $file
+        foreach ($strtmp in (Import-Csv $file.FullName))
+            {
+            $row = New-Object psobject
+            $row | Add-Member -Name "FullName" -MemberType NoteProperty -Value $file.FullName
+            $row | Add-Member -Name "Subcategory" -MemberType NoteProperty -Value $strtmp.Subcategory
+            $row | Add-Member -Name "Setting" -MemberType NoteProperty -Value $strtmp."Inclusion Setting"
+            $row | Add-Member -Name "Value" -MemberType NoteProperty -Value $strtmp."Setting Value"
+            $arrtmp += $row
+            }
+        }
+    $strtmp = $null
+    foreach ($file in $knownfiles)
+        {
+        if ($MoveProcessedFiles)
+            {
+            mkdir ($DestFolder+"auditpolicy") -ErrorAction Ignore > $null
+            Move-Item $file.FullName ($DestFolder+"auditpolicy") -ErrorAction Ignore
+            }
+        $allfiles.Remove($file)
+        }
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "Detailed Audit Policy"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__auditpolicy.csv")
+        }
+    }
+else
+    {
+    Write-Host "Skipping Audit Policy" -ForegroundColor Magenta    
+    } 
+#audit policy
 
 #scripts.ini - report commands to be executed, including section (meaning the purpose of command)
 if ($ProcessScriptsini)
@@ -518,7 +824,14 @@ if ($ProcessScriptsini)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "scripts.ini"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "scripts.ini"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__scriptsini.csv")
+        }
     }
 else
     {
@@ -526,7 +839,7 @@ else
     } 
 #scripts.ini
 
-#empty files (includes blank characters, intentionally skipping files with size 1k+ as such file is not something you should ignore)
+#empty files (includes blank characters, intentionally skipping files with size 1k+ as such file is not something you should ignore even if blank)
 if ($ProcessEmpty)
     {
     $arrtmp=@()
@@ -571,7 +884,14 @@ if ($ProcessEmpty)
             }
         $allfiles.Remove($file)
         }
-    $arrtmp | Out-GridView -Title "Empty files"
+    if ($DisplayGrids)
+        {
+        $arrtmp | Out-GridView -Title "Empty files"
+        }
+    if ($SaveCSVs)
+        {
+        $arrtmp | Export-Csv -NoClobber -Path ($CsvSavePath+"__empty.csv")
+        }
     } 
 else
     {
@@ -579,5 +899,13 @@ else
     }
 #empty
 
-$interesting | Sort-Object -Unique | Out-GridView -Title "Interesting files"
-$allfiles | Out-GridView -Title "Unparsed files"
+if ($DisplayGrids)
+    {
+    $interesting | Sort-Object -Unique | Out-GridView -Title "Interesting files"
+    $allfiles | Out-GridView -Title "Unparsed files"
+    }
+if ($SaveCSVs)
+    {
+    $interesting | Sort-Object -Unique | Export-Csv -NoClobber -Path ($CsvSavePath+"__interesting.csv")
+    $allfiles | Export-Csv -NoClobber -Path ($CsvSavePath+"__unparsed.csv")
+    }
