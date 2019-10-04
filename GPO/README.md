@@ -9,3 +9,5 @@ If you have user permissions in the AD, you can map GUIDs to GPO names. Here com
 5. fill up cells of your B column with `=VLOOKUP(MID(A3,FIND("{",A3)+1,36),Sheet1!$A:$B,2,FALSE)`
 
 Of course you can do the same in PowerShell if you prefer. Up to you :)
+
+**GPOPermissionsCollector.ps1** - requires domain access. Collects permissions for GPOs and allows you to find anomalies.
