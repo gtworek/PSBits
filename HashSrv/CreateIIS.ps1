@@ -24,6 +24,11 @@
 
 $hashRoot = "h:\"  ##STRONGLY encourage you to use anything non-c: The hash database is acually stored within MFT$ and you cannot effectively delete it from C: even if you delete files. The full cleanup will happen after the has volume format. If you understand it and c: still works for you  - feel free to use it.
 
+if ($hashRoot[$hashRoot.Length-1] -ne "\") #add trailing backslash
+    {
+    $hashRoot += "\"
+    }
+
 Write-Host "The script will install everything needed to run hash server. $hashRoot will be used as a root for your data." -ForegroundColor Yellow
 Write-Host "The script will install: IIS including CGI and Management Console, Microsoft rewrite module, Microsoft requestRouter module." -ForegroundColor Yellow
 Write-Host "Press Enter to contiue or Ctrl+C to exit now." -ForegroundColor Yellow
@@ -36,22 +41,28 @@ if (!(Test-Path $hashRoot))
     break
     }
 
-
 Write-Host "Installing Windows features... " -ForegroundColor Cyan -NoNewline
-$temp = Add-WindowsFeature -Name Web-Default-Doc, Web-Http-Errors, Web-Static-Content, Web-Http-Logging, Web-Mgmt-Console, Web-CGI
+$temp = Add-WindowsFeature -Name Web-Default-Doc, Web-Http-Errors, Web-Static-Content, Web-Http-Logging, Web-CGI
+Write-Host "IIS Management... " -ForegroundColor Cyan -NoNewline
+if (Test-Path "c:\Windows\System32\mmc.exe")
+    {
+    $temp = Add-WindowsFeature -Name Web-Mgmt-Console
+    }
+
 if ((dir "$env:windir\System32\inetsrv\cgi.dll") -eq $null)
     {
     Write-Host "[ERR] Error installing IIS features" -ForegroundColor Red
     break
     }
-Write-Host ("Done. Success="+$temp.Success) -ForegroundColor Cyan 
+Write-Host ("Done.") -ForegroundColor Cyan 
 
 md ($hashRoot+'install') -Force | Out-Null
 cd ($hashRoot+'install')
 
 Write-Host "Downloading and installing modules... " -ForegroundColor Cyan -NoNewline
+Write-Host "URLRewrite... " -ForegroundColor Cyan -NoNewline
 $installPath = $hashRoot+"\install\rewrite_amd64_en-US.msi"
-iwr -Uri https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi -OutFile $installPath
+iwr -Uri https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi -OutFile $installPath -UseBasicParsing
 Start-Process msiexec.exe -Wait -ArgumentList ("/passive /i $installPath")
 if ((dir "$env:SystemRoot\system32\inetsrv\rewrite.dll") -eq $null)
     {
@@ -59,8 +70,9 @@ if ((dir "$env:SystemRoot\system32\inetsrv\rewrite.dll") -eq $null)
     break
     }
 
+Write-Host "RequestRouting... " -ForegroundColor Cyan -NoNewline
 $installPath = $hashRoot+"\install\requestRouter_amd64.msi"
-iwr -Uri https://go.microsoft.com/fwlink/?LinkID=615136 -OutFile $installPath
+iwr -Uri https://go.microsoft.com/fwlink/?LinkID=615136 -OutFile $installPath -UseBasicParsing
 Start-Process msiexec.exe -Wait -ArgumentList ("/passive /i $installPath")
 if ((dir "$env:ProgramFiles\IIS\Application Request Routing\requestRouter.dll") -eq $null)
     {
@@ -226,7 +238,7 @@ else
     $temp2 = $null
     try
         {
-        $temp2 = iwr -uri http://localhost/0000000000000000FFFFFFFFFFFFFFFF
+        $temp2 = iwr -uri http://localhost/0000000000000000FFFFFFFFFFFFFFFF -UseBasicParsing
         }
     catch
         {
@@ -244,4 +256,3 @@ else
     }
 
 Set-Location $loc
-
