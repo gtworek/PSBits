@@ -4,6 +4,7 @@
 HANDLE hRoot;
 FILE_ID_DESCRIPTOR desc;
 HANDLE hFile;
+PFILE_NAME_INFO pFileNameInfo;
 
 int wmain(int argc, PTSTR* argv)
 {
@@ -24,14 +25,27 @@ int wmain(int argc, PTSTR* argv)
 			CloseHandle(hRoot); //closing root here to do not keep it open when you play with actual file handle.
 			if (hFile != INVALID_HANDLE_VALUE)
 			{
-				printf("File opened. Press Enter to terminate.\n");
+				DWORD dwSizeFile = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * 65536;
+				pFileNameInfo = (PFILE_NAME_INFO)malloc(dwSizeFile);
+				if (pFileNameInfo != NULL)
+				{
+					if (GetFileInformationByHandleEx(hFile, FileNameInfo, pFileNameInfo, dwSizeFile))
+					{
+						printf("Filename: %ws", pFileNameInfo->FileName);
+					}
+					else
+					{
+						printf("Could not perform GetFileInformationByHandleEx(). Error: %d\n", GetLastError());
+					}
+				}
+
+				printf("\nFile opened. Press Enter to terminate.\n");
 				getchar();
 				CloseHandle(hFile);
 				return 0;
 			}
 			else
 			{
-				printf("Could not perform OpenFileById(). Error: %d\n", GetLastError());
 				return -1;
 			}
 		}
