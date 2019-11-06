@@ -31,7 +31,7 @@ int wmain(int argc, PTSTR* argv)
 				{
 					if (GetFileInformationByHandleEx(hFile, FileNameInfo, pFileNameInfo, dwSizeFile))
 					{
-						printf("Filename: %ws", pFileNameInfo->FileName);
+						printf("Filename: %.*ls \n", pFileNameInfo->FileNameLength/(unsigned int)sizeof(WCHAR), pFileNameInfo->FileName);
 					}
 					else
 					{
@@ -39,7 +39,7 @@ int wmain(int argc, PTSTR* argv)
 					}
 				}
 
-				printf("\nFile opened. Press Enter to terminate.\n");
+				printf("File opened. Press Enter to terminate.\n");
 				getchar();
 				CloseHandle(hFile);
 				return 0;
