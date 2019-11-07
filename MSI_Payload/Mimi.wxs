@@ -21,13 +21,9 @@
 
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<!-- <Component Id="ProductComponent"> -->
-				<!-- TODO: Insert files, registry keys, and other resources here. -->
-			<!-- </Component> -->
-      <Component Id="Mimikatz" Guid="*">
-        <File Id="mimikatz.exe" Name="mimikatz.exe" Source="mimikatz.exe" />
-      </Component>
+      			<Component Id="Mimikatz" Guid="*">
+        			<File Id="mimikatz.exe" Name="mimikatz.exe" Source="mimikatz.exe" />
+      			</Component>
 		</ComponentGroup>
 	</Fragment>
 </Wix>
