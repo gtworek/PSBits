@@ -8,3 +8,4 @@ Additionally the WiX script was provided if you want to play with your own paylo
 Note: The MSI file is NOT signed by design. Play with your own code signing certificate and `Set-AuthenticodeSignature -FilePath mimi.msi -Certificate ...` <br>
 
 
+And the password is `P@ssw0rd`
