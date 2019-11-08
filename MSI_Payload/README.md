@@ -9,3 +9,7 @@ Note: The MSI file is NOT signed by design. Play with your own code signing cert
 
 
 And the password is `P@ssw0rd`
+
+And how the problem was solved? By marking this particular 7z encrypted file as malicious. Good job :D - https://www.virustotal.com/gui/file/3df2a71790d70d21dbd58c703562799209c559d0e9d13d4a771ed84c0b93fe89/detection
+
+If you do not trust my 7z, you can build your own MSI. 
