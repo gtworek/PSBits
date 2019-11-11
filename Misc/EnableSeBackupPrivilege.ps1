@@ -1,20 +1,19 @@
-function Enable-SeRestorePrivilege {
+function Enable-SeBackupPrivilege {
 <#
 .SYNOPSIS
     
-	Enables SeRestorePrivilege for the current (powershell/ise) process.
-	It allows you to overwrite ACL-protected files using the same console.
+	Enables SeBackupPrivilege for the current (powershell/ise) process.
+	It allows you to read ACL-protected files using the same console.
 	You have to have the privilege in your token first - check it with "whoami /priv" if not sure.
 	
-	The full scenario for taking admin rights is described at https://github.com/gtworek/Priv2Admin under "SeRestore" section.
-    
+   
 .DESCRIPTION
 	Author: Grzegorz Tworek
 	Required Dependencies: None
 	Optional Dependencies: None
 	    
 .EXAMPLE
-	C:\PS> Enable-SeRestorePrivilege
+	C:\PS> Enable-SeBackupPrivilege
 #>
 
 	# API Calls interface for: OpenProcessToken, LookupPrivilegeValue, AdjustTokenPrivileges, GetLastError
@@ -81,14 +80,14 @@ function Enable-SeRestorePrivilege {
 	$TokPriv1Luid.Count = 1
 	$TokPriv1Luid.Attr = 0x00000002 # SE_PRIVILEGE_ENABLED
 			
-	# Get SeRestorePrivilege luid
+	# Get SeBackupPrivilege luid
 	$LuidVal = $Null
-	Write-Debug "Calling LookupPrivilegeValue for SeRestorePrivilege"
-	$CallResult = [Advapi32]::LookupPrivilegeValue($null, "SeRestorePrivilege", [ref]$LuidVal)
-	Write-Debug "SeRestorePrivilege LUID value: $LuidVal"
+	Write-Debug "Calling LookupPrivilegeValue for SeBackupPrivilege"
+	$CallResult = [Advapi32]::LookupPrivilegeValue($null, "SeBackupPrivilege", [ref]$LuidVal)
+	Write-Debug "SeBackupPrivilege LUID value: $LuidVal"
 	$TokPriv1Luid.Luid = $LuidVal
 			
-	# Enable SeRestorePrivilege for the current process
+	# Enable SeBackupPrivilege for the current process
 	Write-Debug "Calling AdjustTokenPrivileges"
 	$CallResult = [Advapi32]::AdjustTokenPrivileges($hTokenHandle, $False, [ref]$TokPriv1Luid, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 	$LastError = [Kernel32]::GetLastError()
@@ -101,4 +100,4 @@ function Enable-SeRestorePrivilege {
 
 
 $DebugPreference = "Continue"
-Enable-SeRestorePrivilege
+Enable-SeBackupPrivilege
