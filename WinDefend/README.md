@@ -5,3 +5,5 @@ Here you can prove it:
 3.	Try to run resulting .exe and observe that eicar.com test file is downloaded and then immediately detected and quarantined.
 4.	Compile the same source providing different output file name: `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /out:msiexec.exe getfile.cs`
 5.	Launch msiexec.exe you have just created and observe eicar.com staying undetected.
+
+If you need more info about eicar.com - see the European Institute for Computer Antivirus Research webpage: http://2016.eicar.org/85-0-Download.html
