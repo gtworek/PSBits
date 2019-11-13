@@ -1,3 +1,5 @@
+***The PoC described below is 100% harmless and you can easily run it on your computer. No harm by eicar test file, no harm by exe you compile on your own from 3-lines-long source code.***
+
 It looks like realtime scanning by Windows Defender depends on the executable file name. YES, only the name, and nothing else. <br>
 Here you can prove it:
 1.	Copy the provided getfile.cs file to your machine.
