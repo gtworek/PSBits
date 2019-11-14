@@ -9,3 +9,5 @@ Here you can prove it:
 5.	Launch msiexec.exe you have just created and observe eicar.com staying undetected.
 
 If you need more info about eicar.com - see the European Institute for Computer Antivirus Research webpage: http://2016.eicar.org/85-0-Download.html
+
+I have played on the Windows ver. 10.0.18362.476 / Defender ve. 4.18.1910.4 / Definitions ver. 1.305.2045.0. Thanks @Phenomytian for reminding me about adding this info.
