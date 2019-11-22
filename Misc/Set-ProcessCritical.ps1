@@ -5,7 +5,7 @@ function Set-ProcessCritical {
 	!!SCRIPT MAY (AND PROBABLY WILL) CAUSE YOUR COMPUTER CRASH!!
     Marks the given process as "Critical", which makes OS crash if you terminate it.
 	It requires SeDebugPrivilege present and enabled, which happens if you launch PowerShell/ISE "as admin" - check it with "whoami /priv" if not sure.
-    If you change 1 --> 0 in the line #63, the process will be un-marked and safe to terminate.
+    If you change 1 --> 0 in the line #65, the process will be un-marked and safe to terminate.
     You must provide PID as a parameter.
     
 .DESCRIPTION
