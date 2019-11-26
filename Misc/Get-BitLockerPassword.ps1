@@ -3,6 +3,7 @@
 # 3. Computers must be reachable through WMI
 # 4. WMI errors are muted with -ErrorAction. Feel free to change this if you like red fonts.
 # 5. BitLocker WMI provider class is documented at https://docs.microsoft.com/en-us/windows/win32/secprov/win32-encryptablevolume
+# 6. manage-bde.exe can do basically the same, using the same WMI interface, but sometimes PowerShell is a big advantage.
 
 $computers=@("localhost","someotherhost")
 
