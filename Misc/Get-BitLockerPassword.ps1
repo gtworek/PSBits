@@ -1,5 +1,5 @@
 # 1. Feel free to wrap it into a nice function and return data as PSObject if you like.
-# 2. Of course you can initialize your $computer variable other ways, i.e. with Get-Content
+# 2. Of course you can initialize your $computers variable other ways, i.e. with Get-Content
 # 3. Computers must be reachable through WMI
 # 4. WMI errors are muted with -ErrorAction. Feel free to change this if you like red fonts.
 # 5. BitLocker WMI provider class is documented at https://docs.microsoft.com/en-us/windows/win32/secprov/win32-encryptablevolume
