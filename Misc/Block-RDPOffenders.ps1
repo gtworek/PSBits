@@ -17,6 +17,7 @@ Probably sooner or later I will create a script for creating whitelist based on 
 but please do not rely on it as not all your legit IPs may exist in the eventlog.
 
 Translating list of IPs into CIDR notation would be nice, but I have no idea how to do it smart way and the script works well anyway.
+Another improvement may rely on additional filtering, not only Event ID and valid IP. 
 
 As always - feel free to suggest improvemets.
 
