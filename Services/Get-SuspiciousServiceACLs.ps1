@@ -8,7 +8,7 @@ $DebugPreference = "Continue"
 $services = (Get-WmiObject Win32_Service -EnableAllPrivileges)
 foreach ($srv in $services)
 {
-    $sd = ($s.GetSecurityDescriptor())
+    $sd = ($srv.GetSecurityDescriptor())
     if ($sd.ReturnValue -ne 0)
     {
         Write-Debug ("Service: "+$srv.name+"`tError "+$sd.ReturnValue) -ErrorAction SilentlyContinue
@@ -28,7 +28,7 @@ foreach ($srv in $services)
         
         if ( ($ACE.Split(";")[2]).Contains("WD") -or ($ACE.Split(";")[2]).Contains("WO") -or ($ACE.Split(";")[2]).Contains("DC") )
         {
-            if (($ACE.Split(";")[5]) -eq "BA") # we do not care about local administrators as they should have such permissions
+            if ( (($ACE.Split(";")[5]) -eq "BA") -or (($ACE.Split(";")[5]) -eq "SY"))# we do not care about local administrators and localsystem as they should have such permissions
             {
                 continue
             }
