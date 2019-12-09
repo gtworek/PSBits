@@ -1,9 +1,14 @@
 # The script uses WMI to get ACLs for services and identify non-admin DC, WD or WO permissions.
 # Any of these permission allows instant elevation to localsystem for any user holding it.
 
-# TODO: Make it work remotely (easy as we use WMI here)
-# TODO: Declare suspicious privileges as an array variable instead of hardcoding strings in "if"
-# TODO: Error checking for resolving SIDs. Aliases resolving.
+# Piece of theory - https://support.microsoft.com/en-us/help/914392/best-practices-and-guidance-for-writers-of-service-discretionary-acces
+
+# TODO #1: Make it work remotely (easy as we use WMI here)
+# TODO #2: Declare suspicious privileges as an array variable instead of hardcoding strings in "if"
+# TODO #3: Error checking for resolving SIDs. Aliases resolving.
+# TODO #4: Make it return neat PS object instead of bunch of "write-host"
+
+# false positive may be reported for seclogon as it has cclcsWDtlocrrc which results from adjacent SW and DT - both quite innocent. Will be solved with TODO #2 from the list above
 
 $DebugPreference = "Continue"
 $services = (Get-WmiObject Win32_Service -EnableAllPrivileges)
