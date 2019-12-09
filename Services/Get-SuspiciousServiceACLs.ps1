@@ -3,6 +3,7 @@
 
 # TODO: Make it work remotely (easy as we use WMI here)
 # TODO: Declare suspicious privileges as an array variable instead of hardcoding strings in "if"
+# TODO: Error checking for resolving SIDs. Aliases resolving.
 
 $DebugPreference = "Continue"
 $services = (Get-WmiObject Win32_Service -EnableAllPrivileges)
@@ -32,7 +33,15 @@ foreach ($srv in $services)
             {
                 continue
             }
-            Write-Host $srv.Name - $ACE.Split(";")[2] - $ACE.Split(";")[5]
+            $PrincipalName = ($ACE.Split(";")[5])
+            if ($PrincipalName.StartsWith("S-1-5-"))
+            {
+                $SID = New-Object System.Security.Principal.SecurityIdentifier(($ACE.Split(";")[5]))
+                $PrincipalName = $SID.Translate([System.Security.Principal.NTAccount]).Value
+            }
+            Write-Host $srv.Name - $ACE.Split(";")[2] - $ACE.Split(";")[5] - $PrincipalName
         } 
     }
 } 
+
+
