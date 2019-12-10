@@ -10,6 +10,12 @@
 
 # false positive may be reported for seclogon as it has cclcsWDtlocrrc which results from adjacent SW and DT - both quite innocent. Will be solved with TODO #2 from the list above
 
+##############
+# no worries about TrustedInstaller as it extremely high privilege (IL)
+# no worries when services such DHCP have permissions for themself ("dhcp" identity). There is no risk related to such situation.
+# thanks @kaiserschloss for bringing this to my attention
+##############
+
 $DebugPreference = "Continue"
 $services = (Get-WmiObject Win32_Service -EnableAllPrivileges)
 foreach ($srv in $services)
