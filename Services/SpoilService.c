@@ -1,10 +1,10 @@
-###############################################################################
+/*#############################################################################
 # Be careful as this code sample changes the "protection" of a service.       #
 # Protected service cannot be un-protected (error 5, because it is protected) #
 # and cannot start (error 577 because it is not signed with                   #
 # the proper cert containing EKU=1.3.6.1.4.1.311.61.4.1).                     #
 # Rename the function to wmain() if you have read this comment ;P             #
-###############################################################################
+#############################################################################*/
 
 #include <Windows.h>
 
