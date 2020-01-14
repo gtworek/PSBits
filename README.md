@@ -1,4 +1,4 @@
 # PSBits
-Simple (mainly PowerShell) solutions allowing you to dig a bit deeper than usual.
+Simple (relatively) solutions allowing you to dig a bit deeper than usual.
 
-Each folder should have its own readme.md explaining details. If not - scripts have extensive comments at the begining.
+Each folder should have its own readme.md explaining details. If not - the code has extensive comments at the begining and inline.
