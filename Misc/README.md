@@ -1,4 +1,5 @@
 1. Block-RDPOffenders - script detects failed logins from remote IPs and blocks such IPs on the firewall.
+1. BringMyWindowsBack - small script moving your open windows to (0,0). May help if window tries to show on disconnected screen.
 1. CloseAll - closes all windows with specific name
 1. EnableSeBackupPrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
 1. EnableSeRestorePrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
