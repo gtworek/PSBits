@@ -7,5 +7,6 @@
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
 1. OpenVPNDecrypt - reads and decrypts passwords stored by OpenVPN GUI
 1. RDGDecrypt - PowerShell one-liner decrypting passwords stored in RDG files used by RDCMan
+1. Read-ETWSD - PowerShell script reading ETW Security Descriptors from registry and converting them into something bit more human-readable.
 1. Set-ProcessCritical - simple script allowing you to mark processes as "Critical" which makes the OS crash if you terminate them. Save your data first! You have been warned. See also comments inside the ps1 file.
 1. Write-CveEvent - uses Windows API to write special type of the event related to detected attacks.
