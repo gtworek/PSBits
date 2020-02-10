@@ -12,3 +12,4 @@ You can register the compiled dll via GUI:
 TODO:
 - [ ] configurable paths instead of slowing down everything
 - [ ] configurable delay instead of fixed 1000ms
+- [ ] better (automated) installation instructions
