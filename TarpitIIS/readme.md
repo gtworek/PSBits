@@ -10,6 +10,6 @@ You can register the compiled dll via GUI:
 - enter "IISTarPit" and the full DLL path.
 
 TODO:
-- [ ] configurable paths instead of slowing down everything
-- [ ] configurable delay instead of fixed 1000ms
+- [x] configurable paths instead of slowing down everything
+- [x] configurable delay instead of fixed 1000ms
 - [ ] better (automated) installation instructions
