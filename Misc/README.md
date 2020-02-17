@@ -3,6 +3,7 @@
 1. CloseAll - closes all windows with specific name
 1. EnableSeBackupPrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
 1. EnableSeRestorePrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
+1. Find-CurveballSignedFiles - scans for files using ECC signatures, which very likely indicates the CVE-2020-0601 exploitation.
 1. Get-BitLockerPassword - simple script allowing you to steal numerical key protectors from BitLocker. Works remotely as well.
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
 1. OpenVPNDecrypt - reads and decrypts passwords stored by OpenVPN GUI
