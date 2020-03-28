@@ -5,3 +5,5 @@ Not sure if it is really useful, but I wanted to observe paths reported, as thei
 And now I am just sharing.
 
 No special privileges required.
+
+More about Windows Notification Facility: https://www.youtube.com/watch?v=MybmgE95weo - great session from BlackHat 2018, by Gabrielle Viala and Alex Ionescu.
