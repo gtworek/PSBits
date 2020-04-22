@@ -1,3 +1,6 @@
+
+# See the ExtractFilenamesFromWindowsEDB.ps1 - same script, but extended with filenames and not only folder names.
+
 # The script performs an analysis of the Windows.edb, specifically, the "SystemIndex_GthrPth" table containing indexed locations.
 # The result may be a great source of knowledge about folders on the drive, mainly in user profiles.
 # The table contains also an information about outlook items, but while folders are stored in a normal way, objects are only referred via binary data.  The script ignores such data.
