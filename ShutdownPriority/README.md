@@ -4,6 +4,8 @@ And it is why I have created a simple DLL. As the DLL can be injected into anoth
 
 The output is returned via debug channel and it can be observed i.e. with [DebugView](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview) from Sysinternals.
 
+The priority is changed to the hardcoded value 0x100 - the lowest (latest shutdown) officially allowed.
+
 You can remove the line with `SetProcessShutdownParameters()` to get *read-only* version if you need it for any reason.
 
 
