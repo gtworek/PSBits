@@ -10,7 +10,7 @@ It is somewhat documented at https://docs.microsoft.com/en-us/windows/win32/serv
 
 The function responsible for displaying shutdown message is not documented at all, and feel free to use it if you need to.
 
-I am not really sorry for the message displayed during shutdown. Just a bad joke/prank if you install the service on friend's machine.
+I am not really sorry for the message displayed during shutdown. Just a bad joke/prank if you install the service on a friend's machine.
 
 - Installation: `sc.exe create NoRebootSvc binPath= c:\noreboot.exe`
 - Uninstall: `sc.exe delete NoRebootSvc`
