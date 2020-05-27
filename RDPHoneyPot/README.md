@@ -7,9 +7,9 @@ If there is a failed logon, the task is executed, reporting such fact to the txt
 It's pure PowerShell and you can install it on any Windows machine with RDP enabled by just running the script.
 
 The solution contains 3 components written in PowerShell:
-1. `react.ps1` - the script detecting failed logon attempts (from events #6525), extracting the attacking IP, and adding the IP as a remote address to a blocking firewall rule. Additionally it writes failed logon time into the text file using the IP address as a name. Of course you do not have to block the traffic, but in practice it is useful as the number of events quickly raises. The ban will be automatically removed after predefined time.
-1. `fwkeeper.ps1` - the script reviewing reports and removing ban for IPs not active for some time. If you want to have honeypot, it may be useful to know repeated attacks and the script makes your machine open to the attacking IP again.
-1. `install.ps1` - the script copying files to their location, installing IIS (if you like to see your reports through http) and configuring scheduled tasks.
+1. `react.ps1` - the script detecting failed logon attempts (from events #6525), extracting the attacking IP, and adding the IP as a remote address to a blocking firewall rule. Additionally, it writes failed logon time into the text file using the IP address as a name. Of course you do not have to block the traffic, but in practice it is useful as the number of events quickly raises. The ban will be automatically removed after a predefined time.
+1. `fwkeeper.ps1` - the script reviewing reports and removing the ban for IPs not active for some time. If you want to have a honeypot, it may be useful to know repeated attacks and the script makes your machine open to the attacking IP again.
+1. `install.ps1` - the script copying files to their location, installing IIS (if you like to see your reports through HTTP) and configuring scheduled tasks.
 
 The FW rule blocks all TCP/IP communication, which means it will work for any RDP port.
 

@@ -1,4 +1,4 @@
-A bunch of scripts and documents related to the data transfer over DNS.
+A bunch of scripts and documents related to data transfer over DNS.
 
 Migrated from TechNet Gallery, where I have published them in mid-2018.
 
