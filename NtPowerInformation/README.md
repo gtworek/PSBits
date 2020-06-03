@@ -92,12 +92,12 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 20 | `VerifyProcessorPowerPolicyAc` | Returns `STATUS_NOT_IMPLEMENTED`. |
 | 21 | `VerifyProcessorPowerPolicyDc` | Returns `STATUS_NOT_IMPLEMENTED`. |
 | 22 | `ProcessorPowerPolicyCurrent` | Returns `STATUS_NOT_IMPLEMENTED`. |
-| 23 | `SystemPowerStateLogging` | ? |
+| 23 | `SystemPowerStateLogging` | Returns information about power logging. Requires additional research. |
 | 24 | `SystemPowerLoggingEntry` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 25 | `SetPowerSettingValue` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 26 | `NotifyUserPowerSetting` | ? |
-| 27 | `PowerInformationLevelUnused0` | ? |
-| 28 | `SystemMonitorHiberBootPowerOff` | ? |
+| 26 | `NotifyUserPowerSetting` | Returns `STATUS_INVALID_PARAMETER`. Does not look like really checking, and it is why I believe it means "not implemented".  |
+| 27 | `PowerInformationLevelUnused0` | Returns `STATUS_INVALID_PARAMETER`. Does not look like really checking, and it is why I believe it means "not implemented". The name suggests it as well. |
+| 28 | `SystemMonitorHiberBootPowerOff` | Returns `STATUS_ACCESS_DENIED` for non-admins. Turns your monitor off until the reboot.  |
 | 29 | `SystemVideoState` | ? |
 | 30 | `TraceApplicationPowerMessage` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 31 | `TraceApplicationPowerMessageEnd` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
