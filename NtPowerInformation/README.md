@@ -7,12 +7,14 @@ Microsoft provides the following documentation:
 - [`POWER_INFORMATION_LEVEL`](https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-power_information_level) - values to call the function with. The document presenting dozens of different POWER_INFORMATION_LEVEL values, and doing it's best to non-explain them.
 - [`CallNtPowerInformation()`](https://docs.microsoft.com/en-us/windows/win32/api/powerbase/nf-powerbase-callntpowerinformation) - wrapper function, calling the `NtPowerInformation()` mentioned above. Document explains some (about 20 out of 90) `InformationLevel` values. Function tries to enable `SeShutdownPrivilege` and `SeCreatePagefilePrivilege` privileges for some `InformationLevel` values. Returns `STATUS_INVALID_PARAMETER` when called with undocumented value, even if the `NtPowerInformation()` works properly. It looks like it was the "*official*" way of calling the real function, before `NtPowerInformation()` syscall was documented.
 - [`ADMINISTRATOR_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/WinNT/ns-winnt-administrator_power_policy) - structure description.
+- [`MONITOR_DISPLAY_STATE`](https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_monitor_display_state) - enum description.
 - [`PROCESSOR_POWER_INFORMATION`](https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str) - structure description.
 - [`SYSTEM_BATTERY_STATE`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_battery_state) - structure description.
 - [`SYSTEM_POWER_CAPABILITIES`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities) - structure description.
 - [`SYSTEM_POWER_INFORMATION`](https://docs.microsoft.com/en-us/windows/win32/power/system-power-information-str) - structure description.
 - [`SYSTEM_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_policy) - structure description.
-- `winnt.h` - header file, being distributed by Microsoft as a part of SDK. Contains `POWER_INFORMATION_LEVEL` enum.
+- `ntpoapi.h` - header file, distributed by Microsoft as a part of SDK. Contains related enums and structures.
+- `winnt.h` - header file, distributed by Microsoft as a part of SDK. Contains `POWER_INFORMATION_LEVEL` enum.
 
 Most of `InformationLevel` values require `SeShutdownPrivilege`, which means it is allowed for each user on Windows 10. If other privilege requirements are identified, it is clearly written in the level description.
 
@@ -73,11 +75,11 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 1 | `SystemPowerPolicyDc` | DC counterpart of `SystemPowerPolicyAc` described above. |
 | 2 | `VerifySystemPolicyAc` | Gets the power policy, and returns it matched against OS/hardware capabilities. |
 | 3 | `VerifySystemPolicyDc` | DC counterpart of `VerifySystemPolicyAc` described above. |
-| 4 | `SystemPowerCapabilities` | Returns [`SYSTEM_POWER_CAPABILITIES`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities) structure. |
+| 4 | `SystemPowerCapabilities` | Returns [`SYSTEM_POWER_CAPABILITIES`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities) structure. You can see it with `!pocaps` in WinDbg. |
 | 5 | `SystemBatteryState` | Returns [`SYSTEM_BATTERY_STATE`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_battery_state) structure. |
 | 6 | `SystemPowerStateHandler` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 7 | `ProcessorStateHandler` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 8 | `SystemPowerPolicyCurrent` | Returns current system power policy. Uses  [`SYSTEM_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_policy) structure. |
+| 8 | `SystemPowerPolicyCurrent` | Returns current system power policy. Uses  [`SYSTEM_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_policy) structure. You can see it with `!popolicy` in WinDbg. |
 | 9 | `AdministratorPowerPolicy` | Returns `STATUS_ACCESS_DENIED` for non-admins. Used for managing system power policy. Uses [`ADMINISTRATOR_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/WinNT/ns-winnt-administrator_power_policy) structure. `NtPowerInformation()` gets the policy if `InputBuffer` is NULL, and sets it otherwise. |
 | 10 | `SystemReserveHiberFile` | Requires `SeCreatePagefilePrivilege`. BOOLEAN input parameter specifies if hibernation file should be allocated or deallocated on the disk. |
 | 11 | `ProcessorInformation` | Returns [`PROCESSOR_POWER_INFORMATION`](https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str) structure. |
@@ -98,28 +100,28 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 26 | `NotifyUserPowerSetting` | Returns `STATUS_INVALID_PARAMETER`. Does not look like really checking, and it is why I believe it means "not implemented".  |
 | 27 | `PowerInformationLevelUnused0` | Returns `STATUS_INVALID_PARAMETER`. Does not look like really checking, and it is why I believe it means "not implemented". The name suggests it as well. |
 | 28 | `SystemMonitorHiberBootPowerOff` | Returns `STATUS_ACCESS_DENIED` for non-admins. Turns your monitor off until the reboot.  |
-| 29 | `SystemVideoState` | ? |
+| 29 | `SystemVideoState` | Returns [`MONITOR_DISPLAY_STATE`](https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_monitor_display_state). |
 | 30 | `TraceApplicationPowerMessage` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 31 | `TraceApplicationPowerMessageEnd` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 32 | `ProcessorPerfStates` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 33 | `ProcessorIdleStates` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 34 | `ProcessorCap` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 35 | `SystemWakeSource` | ? |
-| 36 | `SystemHiberFileInformation` | ? |
-| 37 | `TraceServicePowerMessage` | ? |
+| 35 | `SystemWakeSource` | Returns last wake reasons. The structure remains a bit unclear for me. Used by `powercfg.exe /lastwake`. |
+| 36 | `SystemHiberFileInformation` | Returns data about hinernation file. Probably it is about the size only, but it needs additional research.  |
+| 37 | `TraceServicePowerMessage` | Sends the notification to registered parties. Requires additional research. Registering for power events is [somewhat documented](https://docs.microsoft.com/en-us/windows/win32/power/registering-for-power-events). |
 | 38 | `ProcessorLoad` | Returns `STATUS_ACCESS_DENIED` for non-admins. Looks like simulated CPU load, but requires more research to confirm. |
 | 39 | `PowerShutdownNotification` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 40 | `MonitorCapabilities` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 41 | `SessionPowerInit` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 42 | `SessionDisplayState` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 43 | `PowerRequestCreate` | ? |
-| 44 | `PowerRequestAction` | ? |
-| 45 | `GetPowerRequestList` | ? |
-| 46 | `ProcessorInformationEx` | ? |
+| 43 | `PowerRequestCreate` | Internal implementation of [`PowerCreateRequest()`](https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-powercreaterequest). Applications can use this function to ask for more power if they need it, i.e during installation, some computation, media processing etc. |
+| 44 | `PowerRequestAction` | Internal implementation of [`PowerClearRequest`](https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-powerclearrequest). |
+| 45 | `GetPowerRequestList` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns the current list of power requests. Used by `powercfg.exe /requests`. |
+| 46 | `ProcessorInformationEx` | Returns [`PROCESSOR_POWER_INFORMATION`](https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str) structure. It looks similar to `ProcessorInformation` and seems to be "cpu group"-aware.  |
 | 47 | `NotifyUserModeLegacyPowerEvent` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 48 | `GroupPark` | ? |
+| 48 | `GroupPark` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns `STATUS_ACCESS_DENIED` if run without kernel debug (sounds strange, but it looks exactly like this). Probably it forces parking of selected CPU cores. Requires additional research. |
 | 49 | `ProcessorIdleDomains` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 50 | `WakeTimerList` | ? |
+| 50 | `WakeTimerList` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns the list of wake timers, probably using the `WAKE_TIMER_INFO` defined in `ntpoapi.h`. Used by `powercfg.exe /waketimers`. |
 | 51 | `SystemHiberFileSize` | ? |
 | 52 | `ProcessorIdleStatesHv` | ? |
 | 53 | `ProcessorPerfStatesHv` | ? |
@@ -141,7 +143,7 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 69 | `FirmwareTableInformationRegistered` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 70 | `SetShutdownSelectedTime` | ? |
 | 71 | `SuspendResumeInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 72 | `PlmPowerRequestCreate` | ? |
+| 72 | `PlmPowerRequestCreate` | Similar to `PowerRequestCreate`. Requires additional research. |
 | 73 | `ScreenOff` | ? |
 | 74 | `CsDeviceNotification` | ? |
 | 75 | `PlatformRole` | ? |
