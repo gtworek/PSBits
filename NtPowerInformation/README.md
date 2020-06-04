@@ -18,6 +18,8 @@ Microsoft provides the following documentation:
 
 Most of `InformationLevel` values require `SeShutdownPrivilege`, which means it is allowed for each user on Windows 10. If other privilege requirements are identified, it is clearly written in the level description.
 
+Some power-related parameters can be spotted in the registry under `HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Power`.
+
 If you want to call `NtPowerInformation()` on your own, you can use the following C code:
 ```C
 typedef NTSTATUS(__stdcall* PO_NtPowerInformation)(
@@ -122,22 +124,22 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 48 | `GroupPark` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns `STATUS_ACCESS_DENIED` if run without kernel debug (sounds strange, but it looks exactly like this). Probably it forces parking of selected CPU cores. Requires additional research. |
 | 49 | `ProcessorIdleDomains` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 50 | `WakeTimerList` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns the list of wake timers, probably using the `WAKE_TIMER_INFO` defined in `ntpoapi.h`. Used by `powercfg.exe /waketimers`. |
-| 51 | `SystemHiberFileSize` | ? |
+| 51 | `SystemHiberFileSize` | Returns `STATUS_ACCESS_DENIED` for non-admins. Gets the ULONG hiberfil size as percent of the physical memory size. Returns ULONG size in bytes.  |
 | 52 | `ProcessorIdleStatesHv` | ? |
 | 53 | `ProcessorPerfStatesHv` | ? |
 | 54 | `ProcessorPerfCapHv` | ? |
-| 55 | `ProcessorSetIdle` | ? |
+| 55 | `ProcessorSetIdle` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns `STATUS_ACCESS_DENIED` if run without kernel debug (sounds strange, but it looks exactly like this). Probably it forces idle on selected CPU cores. Requires additional research. |
 | 56 | `LogicalProcessorIdling` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 57 | `UserPresence` | ? |
 | 58 | `PowerSettingNotificationName` | ? |
-| 59 | `GetPowerSettingValue` | ? |
-| 60 | `IdleResiliency` | ? |
+| 59 | `GetPowerSettingValue` | Returns power settings for the given GUID. |
+| 60 | `IdleResiliency` | Returns `STATUS_ACCESS_DENIED` for non-admins. Gets the `POWER_IDLE_RESILIENCY` structure defined in `ntpoapi.h`. Requires additional research. |
 | 61 | `SessionRITState` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 62 | `SessionConnectNotification` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 63 | `SessionPowerCleanup` | ? |
-| 64 | `SessionLockState` | ? |
-| 65 | `SystemHiberbootState` | ? |
-| 66 | `PlatformInformation` | ? |
+| 63 | `SessionPowerCleanup` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
+| 64 | `SessionLockState` | Returns `STATUS_ACCESS_DENIED` for non-admins. Looks like sending lock notification to the Winlogon. Could not make it working. Requires additional research. |
+| 65 | `SystemHiberbootState` | Returns BOOLEAN value reflecting the `HiberbootEnabled` value from registry. Practically, it means "Fast Startup". |
+| 66 | `PlatformInformation` | Returns BOOLEAN value indicating whether the system supports the connected standby power model. |
 | 67 | `PdcInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 68 | `MonitorInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 69 | `FirmwareTableInformationRegistered` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
