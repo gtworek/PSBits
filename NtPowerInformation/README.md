@@ -78,7 +78,7 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 2 | `VerifySystemPolicyAc` | Gets the power policy, and returns it matched against OS/hardware capabilities. |
 | 3 | `VerifySystemPolicyDc` | DC counterpart of `VerifySystemPolicyAc` described above. |
 | 4 | `SystemPowerCapabilities` | Returns [`SYSTEM_POWER_CAPABILITIES`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_capabilities) structure. You can see it with `!pocaps` in WinDbg. |
-| 5 | `SystemBatteryState` | Returns [`SYSTEM_BATTERY_STATE`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_battery_state) structure. |
+| 5 | `SystemBatteryState` | Returns [`SYSTEM_BATTERY_STATE`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_battery_state) structure. See also `SystemBatteryStatePrecise`(83). |
 | 6 | `SystemPowerStateHandler` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 7 | `ProcessorStateHandler` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 8 | `SystemPowerPolicyCurrent` | Returns current system power policy. Uses  [`SYSTEM_POWER_POLICY`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_power_policy) structure. You can see it with `!popolicy` in WinDbg. |
@@ -130,7 +130,7 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 54 | `ProcessorPerfCapHv` | ? |
 | 55 | `ProcessorSetIdle` | Returns `STATUS_ACCESS_DENIED` for non-admins. Returns `STATUS_ACCESS_DENIED` if run without kernel debug (sounds strange, but it looks exactly like this). Probably it forces idle on selected CPU cores. Requires additional research. |
 | 56 | `LogicalProcessorIdling` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 57 | `UserPresence` | ? |
+| 57 | `UserPresence` | Returns `STATUS_NOT_IMPLEMENTED`. |
 | 58 | `PowerSettingNotificationName` | ? |
 | 59 | `GetPowerSettingValue` | Returns power settings for the given GUID. |
 | 60 | `IdleResiliency` | Returns `STATUS_ACCESS_DENIED` for non-admins. Gets the `POWER_IDLE_RESILIENCY` structure defined in `ntpoapi.h`. Requires additional research. |
@@ -143,29 +143,29 @@ In some cases, "*returns...*" means "*fills the output buffer with...*".
 | 67 | `PdcInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 68 | `MonitorInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 69 | `FirmwareTableInformationRegistered` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 70 | `SetShutdownSelectedTime` | ? |
+| 70 | `SetShutdownSelectedTime` | Ignores parameters and stores current high resolution clock value. It looks like a part of preparation for shutdown, when *Fast Startup* is enabled.  |
 | 71 | `SuspendResumeInvocation` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 72 | `PlmPowerRequestCreate` | Similar to `PowerRequestCreate`. Requires additional research. |
-| 73 | `ScreenOff` | ? |
-| 74 | `CsDeviceNotification` | ? |
-| 75 | `PlatformRole` | ? |
-| 76 | `LastResumePerformance` | ? |
-| 77 | `DisplayBurst` | ? |
-| 78 | `ExitLatencySamplingPercentage` | ? |
+| 72 | `PlmPowerRequestCreate` | Similar to `PowerRequestCreate`(43). Requires additional research. |
+| 73 | `ScreenOff` | Must be called with NULLs as input and output. Turns monitor off with no special reason. Mouse move turns monitor back on. |
+| 74 | `CsDeviceNotification` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
+| 75 | `PlatformRole` | Returns `POWER_PLATFORM_ROLE` as defined in `winnt.h`. |
+| 76 | `LastResumePerformance` | Returns performance data about the last resume from hybrid boot, using `RESUME_PERFORMANCE`  as defined in `winnt.h`. |
+| 77 | `DisplayBurst` | Must be called with NULLs as input and output. Used for wake the screen up to display critical notifications. |
+| 78 | `ExitLatencySamplingPercentage` | Returns `STATUS_ACCESS_DENIED` for non-admins. Have no idea about the purpose. |
 | 79 | `RegisterSpmPowerSettings` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 80 | `PlatformIdleStates` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 81 | `ProcessorIdleVeto` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 82 | `PlatformIdleVeto` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 83 | `SystemBatteryStatePrecise` | ? |
-| 84 | `ThermalEvent` | ? |
+| 83 | `SystemBatteryStatePrecise` | Returns [`SYSTEM_BATTERY_STATE`](https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-system_battery_state) structure. See also `SystemBatteryState`(5). |
+| 84 | `ThermalEvent` | Takes some input and returns no output. Totally uknown otherwise, despite the easy name. |
 | 85 | `PowerRequestActionInternal` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
 | 86 | `BatteryDeviceState` | ? |
 | 87 | `PowerInformationInternal` | ? |
-| 88 | `ThermalStandby` | ? |
-| 89 | `SystemHiberFileType` | ? |
-| 90 | `PhysicalPowerButtonPress` | ? |
+| 88 | `ThermalStandby` | Same as `ScreenOff`(73), but specifies thermal standby as a reason.  |
+| 89 | `SystemHiberFileType` | Returns `STATUS_ACCESS_DENIED` for non-admins. Looks like takes 1 for reduced or 2 for full hiberfile, and returns size in bytes. Used by `powercfg.exe /h /type`. |
+| 90 | `PhysicalPowerButtonPress` | Returns `STATUS_ACCESS_DENIED` for non-admins. If non-zero value is provided as input, the 0x1C8 `MANUALLY_INITIATED_POWER_BUTTON_HOLD` BSOD happens after 7 seconds. Somewhat [documented](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x1c8--manually-initiated-power-button-hold). |
 | 91 | `QueryPotentialDripsConstraint` | Kernel mode only? Returns `STATUS_ACCESS_DENIED` when called from user mode. |
-| 92 | `EnergyTrackerCreate` | ? |
-| 93 | `EnergyTrackerQuery` | ? |
-| 94 | `UpdateBlackBoxRecorder` | ? |
+| 92 | `EnergyTrackerCreate` | Returns `STATUS_ACCESS_DENIED` for non-admins. Requires additional research. |
+| 93 | `EnergyTrackerQuery` | Returns `STATUS_ACCESS_DENIED` for non-admins. Requires additional research. |
+| 94 | `UpdateBlackBoxRecorder` | Stores some data in the *BlackBox* memory area for relatively simply access during memory dump analysis. The format and the real usage remain cryptic, but the mechanism seems to be commonly used within the OS. Probably, the blackbox can be read with [`!blackboxbsd`](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/-blackboxbsd) and [`!blackboxscm`](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/-blackboxscm) in WinDbg. |
 | 95 | `PowerInformationLevelMaximum` | Not used. Marks the end of list. |
