@@ -6,6 +6,7 @@
 1. FakeTask - simple script for writing arbitrary values into "Author" and "Created" fields in the Task Scheduler.
 1. Find-CurveballSignedFiles - scans for files using ECC signatures, which very likely indicates the CVE-2020-0601 exploitation.
 1. Get-BitLockerPassword - simple script allowing you to steal numerical key protectors from BitLocker. Works remotely as well.
+1. Get-ProductPolicy - simple script decoding policy stored in HKLM\SYSTEM\CurrentControlSet\Control\ProductOptions
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
 1. OpenVPNDecrypt - reads and decrypts passwords stored by OpenVPN GUI
 1. RDGDecrypt - PowerShell one-liner decrypting passwords stored in RDG files used by RDCMan
