@@ -5,9 +5,9 @@
 
 $fileheadersize = 12
 $entryHeaderSize = 12
-$workingDir = “C:\Temp\rdcach”
+$workingDir = "C:\Temp\rdcach"
 mkdir $workingDir -ErrorAction SilentlyContinue
-$cacheFile=(Get-ChildItem Env:\LOCALAPPDATA).Value+”\Microsoft\Terminal Server Client\Cache\Cache0001.bin”
+$cacheFile=(Get-ChildItem Env:\LOCALAPPDATA).Value+"\Microsoft\Terminal Server Client\Cache\Cache0001.bin"
 $bpp = 4
 $imgNo=0
 $fileSize = (Get-ChildItem $cacheFile).Length
@@ -20,7 +20,7 @@ if ($fs) # better safe than sorry, especiallyif you stop and restart the script 
 }
 $fs = new-object IO.FileStream($cacheFile, [IO.FileMode]::Open)
 $reader = new-object IO.BinaryReader($fs)
-$reader.BaseStream.Seek($fileheadersize,”Begin”) | Out-Null #skip the header
+$reader.BaseStream.Seek($fileheadersize,"Begin") | Out-Null #skip the header
 
 while ($true)
 {
@@ -52,8 +52,8 @@ while ($true)
             $bmBM.SetPixel($js,$is,[System.Drawing.Color]::FromArgb($red, $green, $blue))
         }
     }
-    $imgNoText=($imgNo++).ToString(“0000”)
-    $bmBM.Save(“$workingDir\$imgNamePrefix.$imgNoText.png”)
+    $imgNoText=($imgNo++).ToString("0000")
+    $bmBM.Save("$workingDir\$imgNamePrefix.$imgNoText.png")
 
     Remove-Variable readBuf
     Remove-Variable bmBM
