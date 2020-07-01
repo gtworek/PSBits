@@ -1,14 +1,16 @@
 # the script reads RDP persistent cache from the cache0001.bin file and stores cached bitmaps as PNG files.
 # the tool I wrote years ago for the same purpose had a serious logical bug and provided much more mess.
 # at the same time it was the most commonly stolen piece of my intellectual property :P
+# if you do not like having your bitmaps cached - use "mstsc.exe /public"
 
 $fileheadersize = 12
 $entryHeaderSize = 12
 $workingDir = “C:\Temp\rdcach”
 mkdir $workingDir -ErrorAction SilentlyContinue
-$cacheFile=(dir Env:\LOCALAPPDATA).Value+”\Microsoft\Terminal Server Client\Cache\Cache0001.bin”
+$cacheFile=(Get-ChildItem Env:\LOCALAPPDATA).Value+”\Microsoft\Terminal Server Client\Cache\Cache0001.bin”
 $bpp = 4
 $imgNo=0
+$fileSize = (Get-ChildItem $cacheFile).Length
 
 $entryHeader = New-Object byte[] $entryHeaderSize
 $imgNamePrefix="0" # to make filenames unique each scan, you can use: (get-date).Ticks
@@ -22,6 +24,7 @@ $reader.BaseStream.Seek($fileheadersize,”Begin”) | Out-Null #skip the header
 
 while ($true)
 {
+    Write-Progress -Activity "Decoding..." -PercentComplete (100 * $fs.Position / $fileSize )
     $bytesRead = $reader.Read($entryHeader, 0, $entryHeaderSize)
     if ($bytesRead -ne $entryHeaderSize)
     {
