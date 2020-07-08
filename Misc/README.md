@@ -1,3 +1,4 @@
+1. Block-PowerShell_ISE - script registering a mutex and effectively blocking new instances of ISE.
 1. Block-RDPOffenders - script detects failed logins from remote IPs and blocks such IPs on the firewall.
 1. BringMyWindowsBack - small script moving your open windows to (0,0). May help if window tries to show on disconnected screen.
 1. CloseAll - closes all windows with specific name.
