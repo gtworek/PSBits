@@ -9,6 +9,10 @@ The function obtains logon data, including cleartext password.
    - `"ProviderPath" = [REG_EXPAND_SZ]"%SystemRoot%\System32\NPPSPY.dll"`
    - `"Name" = [REG_SZ]"NPPSpy"`
 
+OR
+
+Use the ConfigureRegistrySettings.ps1 script (by @LadhaAleem)
+
 No reboot required.
 
 #### Documentation:
