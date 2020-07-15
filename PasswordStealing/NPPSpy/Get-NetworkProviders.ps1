@@ -34,5 +34,5 @@ if (Test-Path Variable:PSise)
 }
 else
 {
-    $arrExp | Format-Table
+    $arrExp | Format-List
 }
