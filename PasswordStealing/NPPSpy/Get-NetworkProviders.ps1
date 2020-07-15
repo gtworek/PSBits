@@ -1,5 +1,6 @@
 # The script reads information about network providers (possibly acting as password sniffers) from registry, and displays it
 # each entry is checked for binary signature and DLL metadata
+# no admin privileges needed
 
 # get providers from registry
 $providers = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\NetworkProvider\Order" -Name ProviderOrder
