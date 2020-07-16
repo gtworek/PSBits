@@ -8,6 +8,6 @@ Here you can prove it:
 1.	Compile the same source providing different output file name: `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /out:msiexec.exe getfile.cs`
 1.	Launch msiexec.exe you have just created and observe eicar.com staying undetected.
 
-If you need more info about eicar.com - see the European Institute for Computer Antivirus Research webpage: http://2016.eicar.org/85-0-Download.html
+If you need more info about eicar.com - see the European Institute for Computer Antivirus Research webpage: https://www.eicar.org/?page_id=3950
 
 I have played on Windows ver. 10.0.18362.476 / Defender ver. 4.18.1910.4 / Definitions ver. 1.305.2045.0. Thanks @Phenomytian for reminding me about adding this info.
