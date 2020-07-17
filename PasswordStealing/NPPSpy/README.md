@@ -13,7 +13,12 @@ OR
 
 Use the ConfigureRegistrySettings.ps1 script (by @LadhaAleem)
 
-No reboot required.
+Re-logon is required, reboot is not required.
+
+#### Build it at home
+1. From the Start Menu run Visual Studio 2019 -> x64 Native Tools Command Prompt for VS 2019
+1. Browse to the folder with your NPPSpy.c
+1. Run cl.exe /LD NPPSpy.c
 
 #### Documentation:
 The idea is somewhat documented at https://docs.microsoft.com/en-us/windows/win32/api/npapi/nf-npapi-nplogonnotify
