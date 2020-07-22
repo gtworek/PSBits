@@ -13,6 +13,7 @@
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
 1. No-PowerShell.cs - simple C# code allowing you to run PowerShell script without launching PowerShell processes.
 1. OpenVPNDecrypt - reads and decrypts passwords stored by OpenVPN GUI.
+1. PoisonRDPCache - simple, but working PoC for poisoning RDP cache.
 1. RDGDecrypt - PowerShell one-liner decrypting passwords stored in RDG files used by RDCMan.
 1. Remove-AuthenticodeSignature - PowerShell script, un-signing digitally signed files.
 1. Read-ETWSD - PowerShell script reading ETW Security Descriptors from registry and converting them into something bit more human-readable.
