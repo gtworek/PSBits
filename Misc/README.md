@@ -18,4 +18,5 @@
 1. Remove-AuthenticodeSignature - PowerShell script, un-signing digitally signed files.
 1. Read-ETWSD - PowerShell script reading ETW Security Descriptors from registry and converting them into something bit more human-readable.
 1. Set-ProcessCritical - simple script allowing you to mark processes as "Critical" which makes the OS crash if you terminate them. Save your data first! You have been warned. See also comments inside the ps1 file.
+1. SpoofSQLBrowser - simple PowerShell script broadcasting information about SQL instances. Go to SSMS, click browse, and then "Network Servers" to see the effect.
 1. Write-CveEvent - uses Windows API to write special type of the event related to detected attacks.
