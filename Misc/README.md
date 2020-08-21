@@ -3,6 +3,7 @@
 1. BringMyWindowsBack - small script moving your open windows to (0,0). May help if window tries to show on disconnected screen.
 1. CloseAll - closes all windows with specific name.
 1. DisableEVTXCRC - demonstrates "ignore checksum errors" flag in the EVTX file format.
+1. DumpChromePasswords - simple PowerShell script dumping URLs, usernames and passwords from Chrome.
 1. DumpKeePassDB - simple PowerShell script dumping data from password-protected KeePass databases.
 1. EnableSeBackupPrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
 1. EnableSeRestorePrivilege - enables the privilege within PowerShell token. Used for privilege escalation as described in https://github.com/gtworek/Priv2Admin
