@@ -1,4 +1,4 @@
-Simple (but fully working code) for `NPLogonNotify()`. 
+Simple (but fully working) code for `NPLogonNotify()`. 
 The function obtains logon data, including cleartext password.
 
 #### Installation:
