@@ -23,6 +23,7 @@ if (!(Test-Path -Path $dbpath))
     return
 }
 
+Add-Type -AssemblyName System.Security
 Add-Type -Path $sqlitedll
 
 $conn = New-Object -TypeName System.Data.SQLite.SQLiteConnection
