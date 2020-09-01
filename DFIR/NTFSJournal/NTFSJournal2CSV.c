@@ -12,6 +12,7 @@
 HANDLE hUsnFileHandle = INVALID_HANDLE_VALUE;
 HANDLE hCsvFileHandle = INVALID_HANDLE_VALUE;
 BOOL bStatus;
+HRESULT hResult;
 USN_JOURNAL_DATA_V1 UsnJournalData;
 READ_USN_JOURNAL_DATA_V1 ReadUsnJournalDataV1;
 PUSN_RECORD_V3 UsnRecordV3;
@@ -25,6 +26,7 @@ TCHAR strBuf[ROW_LEN];
 LONG lCounter = 0;
 PTCHAR pszVolumeName;
 PTCHAR pszCsvFileName;
+
 
 
 __inline PUSN_RECORD_V3 NextUsnRecord(PUSN_RECORD_V3 currentRecord)
@@ -118,7 +120,7 @@ int _tmain(int argc, PTCHAR argv[])
 	);
 	if (INVALID_HANDLE_VALUE == hUsnFileHandle)
 	{
-		_tprintf(TEXT("\r\nERROR: CreateFile() returned %x\r\n"), GetLastError());
+		_tprintf(TEXT("\r\nERROR: CreateFile() returned %u\r\n"), GetLastError());
 		return GetLastError();
 	}
 	else
@@ -137,7 +139,7 @@ int _tmain(int argc, PTCHAR argv[])
 	);
 	if (INVALID_HANDLE_VALUE == hCsvFileHandle)
 	{
-		_tprintf(TEXT("\r\nERROR: CreateFile() returned %x\r\n"), GetLastError());
+		_tprintf(TEXT("\r\nERROR: CreateFile() returned %u\r\n"), GetLastError());
 		return GetLastError();
 	}
 	else
@@ -160,7 +162,7 @@ int _tmain(int argc, PTCHAR argv[])
 	if (!bStatus)
 	{
 		_tprintf(
-			TEXT("ERROR: DeviceIoControl(FSCTL_QUERY_USN_JOURNAL...) returned %x\r\n"),
+			TEXT("ERROR: DeviceIoControl(FSCTL_QUERY_USN_JOURNAL...) returned %u\r\n"),
 			GetLastError()
 		);
 		return GetLastError();
@@ -216,7 +218,7 @@ int _tmain(int argc, PTCHAR argv[])
 			}
 			else
 			{
-				_tprintf(TEXT("ERROR: DeviceIoControl(FSCTL_READ_USN_JOURNAL...) returned %x\r\n"), GetLastError());
+				_tprintf(TEXT("ERROR: DeviceIoControl(FSCTL_READ_USN_JOURNAL...) returned %u\r\n"), GetLastError());
 				return GetLastError();
 			}
 		}
@@ -233,7 +235,7 @@ int _tmain(int argc, PTCHAR argv[])
 			switch (UsnRecordV3->MajorVersion) //ver 2, 3, and 4 have the same structure fields at the beginning. Even if it is not ver 3, the code is ok.
 			{
 				case 3: //only ver 3 is supported, as it is the only one happening in disks I had a chance to analyze.
-					StringCchPrintf(
+					hResult= StringCchPrintf(
 						strBuf,
 						ROW_LEN,
 						TEXT("%lld\t0x%08x\t0x%08x\t0x%08x\t0x%08x\t%s\t%s\t%s\t%.*s\r\n"),
@@ -248,6 +250,11 @@ int _tmain(int argc, PTCHAR argv[])
 						UsnRecordV3->FileNameLength / sizeof(WCHAR), //wchar as it is about wide string defined in struct; value used to cut name in the next param
 						(PWSTR)Add2Ptr(UsnRecordV3, UsnRecordV3->FileNameOffset) //always PWSTR as it is how it goes in struct
 					);
+				if (S_OK != hResult)
+				{
+					_tprintf(TEXT("ERROR: StringCchPrintf returned %u\r\n"), hResult);
+					return ERROR_INSUFFICIENT_BUFFER;
+				}
 #pragma warning( disable : 4267 ) //size_t to dword. Should be safe because size of TCHAR should not overflow DWORD
 					bStatus = WriteFile(
 						hCsvFileHandle,
@@ -260,7 +267,7 @@ int _tmain(int argc, PTCHAR argv[])
 					if (!bStatus)
 					{
 						_tprintf(
-							TEXT("ERROR: WriteFile() returned %x\r\n"),
+							TEXT("ERROR: WriteFile() returned %u\r\n"),
 							GetLastError()
 						);
 						return GetLastError();
