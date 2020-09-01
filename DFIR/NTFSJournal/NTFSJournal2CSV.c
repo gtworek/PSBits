@@ -4,8 +4,7 @@
 
 #define READ_JOURNAL_BUFFER_SIZE (1024 * 1024)
 #define ISO_DATETIME_LEN 26
-#define FILENAME_LEN MAX_PATH
-#define ROW_LEN 2048
+#define ROW_LEN 4096
 #define ID_LEN 33
 
 #define Add2Ptr(Ptr,Inc) ((PVOID)((PUCHAR)(Ptr) + (Inc)))
@@ -236,7 +235,7 @@ int _tmain(int argc, PTCHAR argv[])
 				case 3: //only ver 3 is supported, as it is the only one happening in disks I had a chance to analyze.
 					StringCchPrintf(
 						strBuf,
-						FILENAME_LEN,
+						ROW_LEN,
 						TEXT("%lld\t0x%08x\t0x%08x\t0x%08x\t0x%08x\t%s\t%s\t%s\t%.*s\r\n"),
 						UsnRecordV3->Usn,
 						UsnRecordV3->Reason,
@@ -289,3 +288,4 @@ int _tmain(int argc, PTCHAR argv[])
 	CloseHandle(hCsvFileHandle);
 	return 0;
 }
+
