@@ -19,7 +19,7 @@
         <Icons>
           <IconRaw
             FileType="Ico"
-            FileURL="/gtworek/PSBits/blob/master/LoLBIN/pirate.ico?raw=true" />
+            FileURL="/gtworek/PSBits/master/LoLBIN/pirate.ico" />
         </Icons>
         <FileExtensions />
         <Folders>
@@ -30,7 +30,7 @@
           <HostingTerminalServer>
             <ResourceFile
               FileExtension=".rdp"
-              URL="/gtworek/PSBits/blob/master/LoLBIN/eicar_com.zip?raw=true" />
+              URL="/gtworek/PSBits/blob/master/LoLBIN/eicar_com.zip" />
             <TerminalServerRef Ref="foobar" />
           </HostingTerminalServer>
         </HostingTerminalServers>
