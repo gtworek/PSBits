@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceCollection
+  PubDate="2020-09-01T00:00:00Z"
+  SchemaVersion="2.1" xmlns="http://schemas.microsoft.com/ts/2007/05/tswf">
+  <Publisher
+    LastUpdated="2020-09-01T00:00:00Z"
+    Name="by @0gtweet"
+    ID="foobar"
+    Description=""
+    SupportsReconnect="true">
+    <Resources>
+      <Resource
+        ID="1a5efa269e6ff53b21c71354bfcea619504441f6"
+        Alias="LoLBIN PoC"
+        Title="LoLBIN PoC"
+        LastUpdated="2020-09-01T00:00:00Z"
+        Type="RemoteApp"
+        ShowByDefault="true">
+        <Icons>
+          <IconRaw
+            FileType="Ico"
+            FileURL="/gtworek/PSBits/master/LoLBIN/pirate.txt" />
+        </Icons>
+        <FileExtensions />
+        <Folders>
+          <Folder
+            Name="/" />
+        </Folders>
+        <HostingTerminalServers>
+          <HostingTerminalServer>
+            <ResourceFile
+              FileExtension=".rdp"
+              URL="/gtworek/PSBits/master/LoLBIN/somebinarystuff.txt" />
+            <TerminalServerRef Ref="foobar" />
+          </HostingTerminalServer>
+        </HostingTerminalServers>
+      </Resource>
+    </Resources>
+    <TerminalServers>
+      <TerminalServer
+        ID="foobar"
+        Name="foobar"
+        LastUpdated="2020-09-01T00:00:00Z" />
+    </TerminalServers>
+  </Publisher>
+</ResourceCollection>
