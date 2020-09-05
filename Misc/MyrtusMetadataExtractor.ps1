@@ -1,4 +1,4 @@
-# simple meteadata extractor for the repository published by @Myrtus0x0 at https://github.com/myrtus0x0/Pastebin-Scraping-Results/tree/master/base64MZHeader
+#simple meteadata extractor for the repository published by @Myrtus0x0 at https://github.com/myrtus0x0/Pastebin-Scraping-Results/tree/master/base64MZHeader
 
 $workingdir = "C:\Temp\Myrtus"
 
@@ -36,13 +36,24 @@ else
     $arrExp | Format-List
 }
 
+break
 
-# rough (hardcoded columns) but working convert to markdown. 
+
+# rough (hardcoded cols) but working convert to markdown. 
 $markdown = ""
 $markdown += "Name | Signer | Descritption | InternalName | OriginalFilename | ProductName | VersionInfo | Comments | CompanyName | MD5`r`n"
 $markdown += " --- | --- | --- | --- | --- | --- | --- | --- | --- | --- `r`n"
 foreach ($row in $arrExp)
 {
+    if ($row.Comments -contains "`r") #cleanup as mardown does not love CRLFs
+    {
+        $row.Comments = $row.Comments.Replace("`r"," \ ")
+    }
+    if ($row.Comments -contains "`n") #cleanup as mardown does not love CRLFs
+    {
+        $row.Comments = $row.Comments.Replace("`n"," \ ")
+    }
+
     $markdown += $row.Name
     $markdown += "|"
     $markdown += $row.Signer
@@ -64,3 +75,5 @@ foreach ($row in $arrExp)
     $markdown += $row.MD5
     $markdown += "`r`n"
 }
+
+$markdown > C:\Temp\Myrtus\Myrtus0x0.md
