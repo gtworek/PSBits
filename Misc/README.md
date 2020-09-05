@@ -12,6 +12,7 @@
 1. Get-BitLockerPassword - simple script allowing you to steal numerical key protectors from BitLocker. Works remotely as well.
 1. Get-ProductPolicy - simple script decoding policy stored in HKLM\SYSTEM\CurrentControlSet\Control\ProductOptions
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
+1. MyrtusMetadataExtractor - simple meteadata extractor for the repository published by @Myrtus0x0 at https://github.com/myrtus0x0/Pastebin-Scraping-Results/tree/master/base64MZHeader
 1. No-PowerShell.cs - simple C# code allowing you to run PowerShell script without launching PowerShell processes.
 1. OpenVPNDecrypt - reads and decrypts passwords stored by OpenVPN GUI.
 1. PoisonRDPCache - simple, but working PoC for poisoning RDP cache.
