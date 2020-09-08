@@ -40,13 +40,11 @@ PSID pSidOldSid;
 PSID pSidNewSid;
 SIZE_T uiHeaderSize;
 SIZE_T uiInputSize;
-UNICODE_STRING ustrVolumeName;
-OBJECT_ATTRIBUTES ObjAttr;
 
 // hardcoded to require a bit more attention before you destroy something in prod.
-LPCWSTR wszOldSid = L"S-1-5-32-545";
-LPCWSTR wszNewSid = L"S-1-5-32-544";
-LPCWSTR wszVolumePath = L"\\??\\\\X:";
+LPCWSTR wszOldSid = L"S-1-5-32-544";
+LPCWSTR wszNewSid = L"S-1-5-32-545";
+LPCWSTR wszVolumePath = L"\\\\.\\C:";
 
 int _tmain()
 {
@@ -92,30 +90,20 @@ int _tmain()
 	CopyMemory(Add2Ptr(pSdInput, pSdInput->SdChange.CurrentMachineSIDOffset), pSidOldSid, ulOldSidSize);
 	CopyMemory(Add2Ptr(pSdInput, pSdInput->SdChange.NewMachineSIDOffset), pSidNewSid, ulNewSidSize);
 
-	RtlInitUnicodeString(&ustrVolumeName, wszVolumePath);
-
-	ObjAttr.Length = sizeof(OBJECT_ATTRIBUTES);
-	ObjAttr.RootDirectory = NULL;
-	ObjAttr.Attributes = OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE;
-	ObjAttr.ObjectName = &ustrVolumeName;
-	ObjAttr.SecurityDescriptor = NULL;
-	ObjAttr.SecurityQualityOfService = NULL;
-
-	status = NtOpenFile(&hVolume,
-		SYNCHRONIZE | FILE_READ_DATA | FILE_WRITE_DATA,
-		&ObjAttr,
-		&ioStatus,
+	hVolume = CreateFile(
+		wszVolumePath,
+		 SYNCHRONIZE | FILE_TRAVERSE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
-		FILE_SYNCHRONOUS_IO_NONALERT);
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL
+	);
 
-	if (STATUS_SUCCESS != status)
+	if (INVALID_HANDLE_VALUE == hVolume)
 	{
-		_tprintf(TEXT("ERRROR: NtOpenFile() returned %i\r\n"), status);
-		if (STATUS_ACCESS_DENIED == status) //Covering this one case, as such things generate "what is -1073741790?" emails.
-		{
-			_tprintf(TEXT("ERRROR: This code must run as ADMIN.\r\n"));
-		}
-		return status;
+		_tprintf(TEXT("ERROR: CreateFile() failed with error code %i\r\n"), GetLastError());
+		return GetLastError();
 	}
 
 	status = NtFsControlFile(
@@ -133,7 +121,7 @@ int _tmain()
 
 	if (STATUS_SUCCESS != status)
 	{
-		_tprintf(TEXT("ERRROR: %i\r\n"), status);
+		_tprintf(TEXT("ERRROR: NtFsControlFile() returned %i\r\n"), status);
 		return status;
 	}
 
