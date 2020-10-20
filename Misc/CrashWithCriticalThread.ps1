@@ -1,3 +1,6 @@
+# 
+#     !!SCRIPT MAY (AND PROBABLY WILL) CAUSE YOUR COMPUTER CRASH!!
+#
 # Some could hear about critical processes. But the same works with threads as well!
 # You can use NtSetInformationThread() with ThreadBreakOnTermination parameter and any thread handle. 
 # See the https://github.com/gtworek/PSBits/blob/master/Misc/Set-ProcessCritical.ps1 for nearly idendical PowerShell code working on processes.
