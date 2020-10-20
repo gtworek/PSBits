@@ -1,0 +1,1 @@
+!for_each_thread "r $t1 = poi( @#Thread + @@c++(#FIELD_OFFSET(nt!_ETHREAD, ThreadName)) ); .if (@$t1 != 0) {dt nt!_ETHREAD @#Thread Cid.UniqueProcess Cid.UniqueThread ThreadName}"
