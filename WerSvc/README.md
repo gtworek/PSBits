@@ -10,7 +10,7 @@ When the WerSvc runs, it opens `WindowsErrorReportingServicePort` ALPC. And agai
 
  So far, I have tested the following scenarios:
  
-| Command | Input | Effect |
+| Message | Input | Effect |
 | --- | --- | --- |
 | 0x60000000 | Type, ID | WerSvc launches `werfault.exe -k -l Type ID`  as a LocalSystem |
 | 0xb0000000 | Target PID |  1. WerSvc launches `werfault.exe -pr Global\XXXXXXXXXXXXXXXX` using the duplicated token of the target process.<br>2. Some dump activities on the target process are performed, but the file looks like non-persistent. |
