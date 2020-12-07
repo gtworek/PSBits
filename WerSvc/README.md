@@ -16,6 +16,7 @@ When the WerSvc runs, it opens `WindowsErrorReportingServicePort` ALPC. And agai
 | 0x60000000 | Type, ID | WerSvc launches `werfault.exe -k -l Type ID`  as a LocalSystem |
 | 0x80000000 | Enable | WerSvc calls `NtSetSystemInformation(SystemImageFileExecutionOptionsInformation)` making Windows read `HKCU\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\image.exe\GlobalFlag`. As the HKCU, the key can be written by an unprivileged user. |
 | 0xb0000000 | Target PID |  1. WerSvc launches `werfault.exe -pr Global\XXXXXXXXXXXXXXXX` using the duplicated token of the target process.<br>2. Some dump activities on the target process are performed, but the file looks like non-persistent. |
+| 0xf0000002 | Overwrite | Gets, creates if not present, and optionally overwrites the GUID stored at `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SQMClient\MachineId` |
 | 0xf0030002 | - | The detailed report about the process performance is generated in `C:\ProgramData\Microsoft\Windows\WER\Temp\`. See the [sample](https://github.com/gtworek/PSBits/blob/master/WerSvc/WER75A2.tmp.csv). |
 | 0xf0040002 | - | The detailed report about the system performance is generated in `C:\ProgramData\Microsoft\Windows\WER\Temp\`. See the [sample](https://github.com/gtworek/PSBits/blob/master/WerSvc/WER2DDE.tmp.txt). |
 
