@@ -17,7 +17,7 @@ The code is totally harmless, but it has no cleanup options. If you really want 
 
 As such LSA/token games are destroying the trust to users, tokens, etc., the SeTcbPrivilege is required. The easiest way of having it, is to start the code with LOCALSYSTEM. `psexec.exe -i -s -d cmd.exe` will do the job for you.
 
-Have fun!
+Enjoy!
 
 BTW, the most useful source of knowledge, was the Microsoft patent describing how IIS impersonates worker processes. You can see it at: https://patents.justia.com/patent/8640215 
 
