@@ -3,7 +3,7 @@ Seeing this, I have started to ask myself: can I start my own process with arbit
 
 And I started to analyze available documentation and test my ideas with some code.
 
-Here you can see the result. I am creating (and registering aka mapping) new identity (see the line 239, 240). I am creating couple of SIDs, and then I tell LSA to add a mapping. 
+Here you can see the result named `RunAsVA`. I am creating (and registering aka mapping) new identity (see the line 239, 240). I am creating couple of SIDs, and then I tell LSA to add a mapping. 
 
 Next step relies on creating a token for such user (line 314).
 
@@ -20,3 +20,5 @@ As such LSA/token games are destroying the trust to users, tokens, etc., the SeT
 Have fun!
 
 BTW, the most useful source of knowledge, was the Microsoft patent describing how IIS impersonates worker processes. You can see it at: https://patents.justia.com/patent/8640215 
+
+And couple of moments later I have realized what superpower I've got. I can put ANYTHING into the valid token. Did you ever wanted to be TrustedInstaller? Or it is just me...? Grab your copy of `TrustedInstallerCmd` and have fun too! :) 
