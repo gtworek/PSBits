@@ -9,10 +9,10 @@ Instalacja zautomatyzowana:
 
 Instalacja półautomatyczna:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
-1. Uruchom skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Install-CERThosts.ps1
+1. Uruchom skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Install-CERTHosts.ps1
 
 Instalacja ręczna:
-1. Skopiuj skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Update-CERThosts.ps1 do lokalizacji, do której użytkownik bez praw administratora nie ma praw zapisu. Na przykład do `C:\Program Files\`.
+1. Skopiuj skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Update-CERTHosts.ps1 do lokalizacji, do której użytkownik bez praw administratora nie ma praw zapisu. Na przykład do `C:\Program Files\`.
 1. Utwórz *Scheduled Task* wykonujący skrypt z żądaną częstotliwością, działający na prawach administratora lub systemu.
 
 **\[EN\]**: as these scripts rely on cert.pl data, useful only for Polish users, I am providing the description only in Polish. Scripts are relatively simple, though.
