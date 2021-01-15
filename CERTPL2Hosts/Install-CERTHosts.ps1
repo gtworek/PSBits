@@ -19,7 +19,7 @@ if (!([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups 
 $ScriptFolder = ($env:ProgramFiles)+"\"
 $ScriptName = "Update-CERTHosts.ps1"
 $TaskName = "CERT.PL do hosts"
-$ScriptURL = "https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2hosts/Update-CERTHosts.ps1"
+$ScriptURL = "https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2Hosts/Update-CERTHosts.ps1"
 
 # Sprawdzamy czy już może jest plik
 if (!(Test-Path -LiteralPath ($ScriptFolder+$ScriptName)))
