@@ -1,4 +1,4 @@
-﻿# Skrypt instalujący 
+# Skrypt instalujący 
 # 1. Sprawdza czy aby pliku nie ma już w program files. A nuż ktoś woli go tam ręcznie wrzucić.
 # 2. Pobiera aktualny plik skryptu z repozytorium, jeżeli go nie ma w pkt 1.
 # 3. Tworzy Scheduled Task, uruchamiający skrypt raz na godzinę. 
@@ -19,7 +19,7 @@ if (!([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups 
 $ScriptFolder = ($env:ProgramFiles)+"\"
 $ScriptName = "Update-CERTHosts.ps1"
 $TaskName = "CERT.PL do hosts"
-$ScriptURL = "https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2hosts/Update-CERThosts.ps1"
+$ScriptURL = "https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2hosts/Update-CERTHosts.ps1"
 
 # Sprawdzamy czy już może jest plik
 if (!(Test-Path -LiteralPath ($ScriptFolder+$ScriptName)))
