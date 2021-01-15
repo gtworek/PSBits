@@ -1,3 +1,4 @@
+######
 # Skrypt instalujący 
 # 1. Sprawdza czy aby pliku nie ma już w program files. A nuż ktoś woli go tam ręcznie wrzucić.
 # 2. Pobiera aktualny plik skryptu z repozytorium, jeżeli go nie ma w pkt 1.
@@ -7,6 +8,7 @@
 # żeby móc modyfikować plik hosts.
 #
 # W trakcie działania, nowe definicje pobierane będą tylko z CERT.PL.
+######
 
 # czy admin?
 if (!([bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")))
