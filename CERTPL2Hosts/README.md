@@ -3,15 +3,15 @@
 
 Prosty skrypt `Update-CERTHosts.ps1` napisany w PowerShell pozwala na zautomatyzowanie procesu pobierania list z CERT i dodawania ich do pliku hosts. Skrypt `Install-CERTHost.ps1` automatyzuje instalację i ustawia *Scheduled Task* automatycznie wykonujący aktualizację co godzinę.
 
-Instalacja zautomatyzowana - wymaga zaufania (lub sprawdzenia), że skrypt spod wskazanego URL nie zrobi nic złego:
+**Instalacja zautomatyzowana** - wymaga zaufania (lub sprawdzenia), że skrypt spod wskazanego URL nie zrobi nic złego:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
 1. Wykonaj polecenie (jedna linia): `iex (iwr 'https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2Hosts/Install-CERTHosts.ps1' -DisableKeepAlive).Content`
 
-Instalacja półautomatyczna - daje szansę na obejrzenie skryptu przed jego uruchomieniem:
+**Instalacja półautomatyczna** - daje szansę na obejrzenie skryptu przed jego uruchomieniem:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
 1. Uruchom skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Install-CERTHosts.ps1
 
-Instalacja ręczna - tylko skrypt aktualizujący wymaga uruchomienia, można go sprawdzić/zmodyfikować przed utworzeniem *Taska*:
+**Instalacja ręczna** - tylko skrypt aktualizujący wymaga uruchomienia, można go sprawdzić/zmodyfikować przed utworzeniem *Taska*:
 1. Skopiuj skrypt znajdujący się na https://github.com/gtworek/PSBits/blob/master/CERTPL2Hosts/Update-CERTHosts.ps1 do lokalizacji, do której użytkownik bez praw administratora nie ma praw zapisu. Na przykład do `C:\Program Files\`.
 1. Utwórz *Scheduled Task* wykonujący skrypt z żądaną częstotliwością, działający na prawach administratora lub systemu.
 
