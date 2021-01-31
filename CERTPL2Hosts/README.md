@@ -1,7 +1,7 @@
 **\[PL\]**:
 [CERT Polska](https://www.cert.pl/) utrzymuje listę hostów, które służą do rozmaitych ataków phishingowych itp. Wielu administratorów "wycina" te adresy na DNSach, sprzęcie sieciowym itp, jednak równie skutecznie można to wykonać na poziomie lokalnego pliku hosts. Metoda ta jest wygodna zwłaszcza w przypadku pojedynczych komputerów, pracujących w sieci nie wyposażonej w zaawansowaną infrastrukturę, i obsługiwanych na codzień przez osoby mogące być ofiarami ataków. Wpisane do pliku hosts adresy z CERT Polska, zamiast do atakującego, prowadzić będą na dedykowaną stronę CERT, zawierającą ostrzeżenie o szkodliwym charakterze danej witryny.
 
-Prosty skrypt `Update-CERTHosts.ps1` napisany w PowerShell pozwala na zautomatyzowanie procesu pobierania list z CERT i dodawania ich do pliku hosts. Skrypt `Install-CERTHost.ps1` automatyzuje instalację i ustawia *Scheduled Task* automatycznie wykonujący aktualizację co godzinę.
+Prosty skrypt `Update-CERTHosts.ps1` napisany w PowerShell pozwala na zautomatyzowanie procesu pobierania list z CERT i dodawania ich do pliku hosts. Skrypt `Install-CERTHost.ps1` automatyzuje instalację i ustawia *Scheduled Task* automatycznie wykonujący aktualizację ~~co godzinę~~ co dziesięć minut, zgodnie z zaleceniami CERT.
 
 **Instalacja zautomatyzowana** - wymaga zaufania (lub sprawdzenia), że skrypt spod wskazanego URL nie zrobi nic złego:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
