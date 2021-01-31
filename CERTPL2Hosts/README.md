@@ -21,11 +21,12 @@ Prosty skrypt `Update-CERTHosts.ps1` napisany w PowerShell pozwala na zautomatyz
 1. Kliknij prawym i usuń lub wyłącz zadanie.
 1. Usuń adresy dodane do pliku hosts:
     1. Uruchom cmd.exe lub PowerShell z uprawnieniami administratora,
-    1. W cmd.exe lub PowerShell uruchom `notepad c:\windows\system32\drivers\etc\hosts`,
+    1. W cmd.exe lub PowerShell uruchom `notepad C:\Windows\System32\drivers\etc\hosts`,
     1. Znajdź linię `### Start of https://hole.cert.pl/domains/domains_hosts.txt content ###` (zwykle około dwudziestej linii w pliku),
     1. Znajdź linię `### End of https://hole.cert.pl/domains/domains_hosts.txt content ###` (zwykle na końcu pliku),
     1. Usuń te linie i całą zawartość pomiędzy nimi,
     1. Zapisz zmodyfimokowany plik hosts,
 1. Możesz również usunąć plik `Update-CERTHosts.ps1` z `C:\Program Files`.
+1. Opcjonalnie, możesz posłużyć się kopią zapasową pliku hosts, wykonaną automatycznie przy pierwszym uruchomieniu skryptu i dostępną w pliku `C:\Windows\System32\drivers\etc\hosts_holecert.bak`
 
 **\[EN\]**: as these scripts rely on cert.pl data, useful only for Polish users, I am providing the description only in Polish. Scripts are relatively simple, though.
