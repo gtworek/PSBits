@@ -51,7 +51,7 @@ $Service = new-object -ComObject ("Schedule.Service")
 $Service.Connect($Env:computername)
 $RootFolder = $Service.GetFolder("\")
 $TaskDefinition = $Service.NewTask(0) # W MSDN piszą, że musi być 0
-$TaskDefinition.RegistrationInfo.Description = $TaskNameKeeper
+$TaskDefinition.RegistrationInfo.Description = ""
 $TaskDefinition.RegistrationInfo.Author = $Env:username
 $TaskDefinition.Settings.AllowDemandStart = $true
 $TaskDefinition.Settings.AllowHardTerminate = $true
@@ -76,7 +76,7 @@ $Trigger.DaysInterval = 1
 $Trigger.Enabled = $true
 $Action = $TaskDefinition.Actions.Create(0) # TASK_ACTION_EXEC
 $Action.Path = (Get-Command powershell.exe).Definition
-$Action.Arguments = "-file """+($ScriptFolder+$ScriptName)+""""
+$Action.Arguments = "-noprofile -executionpolicy bypass -file """+($ScriptFolder+$ScriptName)+""""
 $Action.WorkingDirectory = $ScriptFolder
 $Task = $RootFolder.RegisterTaskDefinition($TaskName,$TaskDefinition,6,"SYSTEM",$null,5)  # TASK_CREATE_OR_UPDATE, TASK_LOGON_SERVICE_ACCOUNT
 
