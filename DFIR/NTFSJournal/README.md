@@ -7,4 +7,4 @@ Then I have tried with PowerShell (take a look at the brilliant [PoshUSNJournal]
 I have finally decided to write it in C. For flexibility, performance and FUN.
 Enjoy the C code, and the compiled exe, as usual.
 
-More coming soon!
+More coming some day!

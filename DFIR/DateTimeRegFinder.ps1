@@ -21,7 +21,7 @@ function Convert-RegistryDateToDatetime([byte[]]$b) {
 }
 
 Write-Host "Listing keys... " -NoNewline
-$keys = dir $rootKey -Recurse -ErrorAction SilentlyContinue
+$keys = Get-ChildItem $rootKey -Recurse -ErrorAction SilentlyContinue
 Write-Host $keys.Count "found"
 
 $i=0
