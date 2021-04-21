@@ -5,7 +5,7 @@ Prosty skrypt `Update-CERTHosts.ps1` napisany w PowerShell pozwala na zautomatyz
 
 **Instalacja zautomatyzowana** - wymaga zaufania (lub sprawdzenia), że skrypt spod wskazanego URL nie zrobi nic złego:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
-1. Wykonaj polecenie (jedna linia): `iex (iwr 'https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2Hosts/Install-CERTHosts.ps1' -DisableKeepAlive).Content`
+1. Wykonaj polecenie (jedna linia): `iex (iwr 'https://raw.githubusercontent.com/gtworek/PSBits/master/CERTPL2Hosts/Install-CERTHosts.ps1' -DisableKeepAlive -UseBasicParsing).Content`
 
 **Instalacja półautomatyczna** - daje szansę na obejrzenie skryptu przed jego uruchomieniem:
 1. Uruchom PowerShell lub PowerShell ISE z uprawnieniami administratora
