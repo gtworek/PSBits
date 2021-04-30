@@ -1,4 +1,5 @@
 ## The script assumes you have your Sysmon installed and running. See: https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon
+## Be careful trusting commandline values, as the parent process can manipulate them - https://github.com/gtworek/PSBits/tree/master/FakeCmdLine
 $MaxEvents=1000 # limit for the last X events from the log.
 $CmdLineHeader="CommandLine:"
 # $CmdLineHeader="Image:" ##### Replace the line above with this one if executable paths (without parameters) are enough for you.
