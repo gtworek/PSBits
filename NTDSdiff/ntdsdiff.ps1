@@ -2,8 +2,8 @@
 # The script analyzes 2 pieces of ntds.dit and saves the result as JSON. It does not rely on AD/LDAP/Whatever, but reads ntds.dit files direcly as Jet Blue database.
 
 # Some things may be a bit better, but it is about cosmetics, not the forensics value:
-# Done: clean mess. the code is not beautiful.
-# TODO: Generate human readable (diff highlighting!) report and not only JSON.
+# Done: clean mess. the code is not beautiful, but it should be ok for now.
+# Done: Generate human readable (diff highlighting!) report and not only JSON.
 # TODO: SDDL for deleted records
 # TODO: More translations column-attribute and array-value
 # TODO: Take look at sids
@@ -11,7 +11,8 @@
 
 $OldNTDSFile = ".\ntds_old.dit" 
 $NewNTDSFile = ".\ntds.dit" 
-$ResultFile = ".\resultJSON.txt"
+$ResultFile = ".\resultJSON.txt" # save will intentionally fail if the file already exists.
+
 
 $friendlyColumnNames = $true
 $VerbosePreference = "Continue" # SilentlyContinue do not display messages.  
@@ -98,6 +99,7 @@ $LinkDNTCols =  @($null, $null, $null)
 $BackLinkDNTCols =  @($null, $null, $null)
 $DNTHashes  =  @($null, $null, $null)
 
+
 $srcFiles[1] = $OldNTDSFile
 $srcFiles[2] = $NewNTDSFile
 
@@ -153,6 +155,7 @@ for ($ii = 1; $ii -le 2; $ii++)
     Remove-Variable DatabaseTemp
 } # open files
 
+
 #####################start processing
 ## build kind of index for sd (SDHashes)
 for ($ii = 1; $ii -le 2; $ii++)
@@ -187,6 +190,7 @@ for ($ii = 1; $ii -le 2; $ii++)
         }
     }
 } # sdhashes
+
 
 ## get datatable columns we use later
 for ($ii = 1; $ii -le 2; $ii++)
@@ -245,6 +249,7 @@ while ($true)
         break
     }
 }
+
 
 ## build kind of index for 2. Smaller than for 1: no guidarr1, no hash
 $DNTHashes[2] = @{}
@@ -430,23 +435,41 @@ foreach ($deletedGUID in $deletedGUIDs)
     $superHash.Add($deletedGUID, $tempHash)
 } # check for disappeared records
 
+Write-Host
+
+#close/detach the database
+Write-Verbose -Message "Shutting down databases."
+for ($ii = 1; $ii -le 2; $ii++)
+{
+    [Microsoft.Isam.Esent.Interop.Api]::JetCloseDatabase($Sessions[$ii], $DatabaseIds[$ii], [Microsoft.Isam.Esent.Interop.CloseDatabaseGrbit]::None)
+    [Microsoft.Isam.Esent.Interop.Api]::JetDetachDatabase($Sessions[$ii], $edbfiles[$ii])
+    [Microsoft.Isam.Esent.Interop.Api]::JetEndSession($Sessions[$ii], [Microsoft.Isam.Esent.Interop.EndSessionGrbit]::None)
+    [Microsoft.Isam.Esent.Interop.Api]::JetTerm($Instances[$ii])
+}
+Write-Verbose -Message "Completed shut down successfully."
+
+
 if ($friendlyColumnNames)
 {
     $colNames = @{}
     $colNames.Add('ATTb49', 'distinguishedName')
     $colNames.Add('ATTb590606', 'objectCategory')
     $colNames.Add('ATTc0', 'objectClass')
+    $colNames.Add('ATTi131241', 'showInAdvancedViewOnly')
+    $colNames.Add('ATTi591238', 'dNSTombstoned')
     $colNames.Add('ATTj131073', 'instanceType')
     $colNames.Add('ATTj589832', 'userAccountControl')
     $colNames.Add('ATTk589826', 'objectGUID')
     $colNames.Add('ATTk589914', 'unicodePwd')
     $colNames.Add('ATTk589918', 'ntPwdHistory')
     $colNames.Add('ATTk589949', 'supplementalCredentials')
+    $colNames.Add('ATTk590206', 'dnsRecord')
     $colNames.Add('ATTk590689', 'pekList')
     $colNames.Add('ATTl131074', 'whenCreated')
     $colNames.Add('ATTl131075', 'whenChanged')
     $colNames.Add('ATTm131085', 'displayName')
     $colNames.Add('ATTm131532', 'lDAPDisplayName')
+    $colNames.Add('ATTm1376281', 'dc')
     $colNames.Add('ATTm3', 'cn')
     $colNames.Add('ATTm42', 'givenName')
     $colNames.Add('ATTm589825', 'name')
@@ -462,18 +485,24 @@ if ($friendlyColumnNames)
     $colNames.Add('ATTq589876', 'lastLogon')
 }
 
+
 $superHashTranslated = [ordered]@{}
 foreach ($object in $superHash.Keys)
 {
+    #Write-Host $object -ForegroundColor Cyan
     $agesTranslated = [ordered]@{}
     foreach($age in $superHash.$object.Keys)
     {
+        #Write-Host $age -ForegroundColor Yellow
         $attributesTranslated = [ordered]@{}
         foreach($attribute in $superHash.$object.$age.Keys)
         {
+            #Write-Host $object $age $attribute
+            #Write-Host $attribute -ForegroundColor Red
             $v = $superHash.$object.$age.$attribute
             $v = switch ( $attribute )
             {
+
                 'ATTm13'      { ( [System.Text.Encoding]::Unicode.GetString($v)); break }
                 'ATTm131085'  { ( [System.Text.Encoding]::Unicode.GetString($v)); break }
                 'ATTm1376281' { ( [System.Text.Encoding]::Unicode.GetString($v)); break }
@@ -519,15 +548,84 @@ foreach ($object in $superHash.Keys)
 
 $superHashTranslated | ConvertTo-Json | Out-File $ResultFile -NoClobber 
 
-Write-Host
+## generate html report
+$html = ""
+$html += "<!DOCTYPE html>`r`n<html>`r`n<head>`r`n<style>`r`ndetails {`r`n"
+$html += "`tfont-family: monospace;`r`n`tborder: 1px solid #aaa;`r`n"
+$html += "`tborder-radius: 4px;`r`n`tpadding: .5em .5em 0;`r`n"
+$html += "}`r`n`r`nsummary {`r`n`tfont-weight: bold;`r`n"
+$html += "`tmargin: -.5em -.5em 0;`r`n`tpadding: .5em;`r`n"
+$html += "}`r`n`r`n</style>`r`n</head>`r`n<body>`r`n"
 
-#close/detach the database
-Write-Verbose -Message "Shutting down databases."
-for ($ii = 1; $ii -le 2; $ii++)
+foreach ($object in $superHashTranslated.Keys)
 {
-    [Microsoft.Isam.Esent.Interop.Api]::JetCloseDatabase($Sessions[$ii], $DatabaseIds[$ii], [Microsoft.Isam.Esent.Interop.CloseDatabaseGrbit]::None)
-    [Microsoft.Isam.Esent.Interop.Api]::JetDetachDatabase($Sessions[$ii], $edbfiles[$ii])
-    [Microsoft.Isam.Esent.Interop.Api]::JetEndSession($Sessions[$ii], [Microsoft.Isam.Esent.Interop.EndSessionGrbit]::None)
-    [Microsoft.Isam.Esent.Interop.Api]::JetTerm($Instances[$ii])
+    #Write-Host $object -ForegroundColor Cyan
+    $html += "<details>`r`n"
+    if (0 -eq $superHashTranslated.$object.'old'.Keys.Count) # zero old attributes. Object added. Or 0,0.
+    {
+        $htmlObjectColor = 'green'
+    }
+    else
+    {
+        if (0 -eq $superHashTranslated.$object.'new'.Keys.Count) # nonzero old attributes, zero new attributes. Removed.
+        {
+            $htmlObjectColor = 'red'
+        }
+        else # nonzero old, nonzero new. Changed.
+        {
+            $htmlObjectColor = 'darkorange'
+        }
+    }
+    $htmlNewNameAttribute = $superHashTranslated.$object.'new'.'name'
+    if ($null -ne $htmlNewNameAttribute)
+    {
+        $htmlNewNameAttribute =" (name: " + $htmlNewNameAttribute + ")"
+    }
+    $html += "`t<summary><font color=`"" + $htmlObjectColor + "`">guid: " + $object + $htmlNewNameAttribute + "</font></summary>`r`n"
+
+    #attribute order: all from new and then removed from old
+    $htmlAttrs = $superHashTranslated.$object.'new'.Keys
+    foreach ($htmlAttr in $htmlAttrs)
+    {
+        if ($null -eq $superHashTranslated.$object.'new'.$htmlAttr)  #deleted. # will never happen in this loop.
+        {
+            $htmlObjectColor = 'red'
+        }
+
+        if ($null -eq $superHashTranslated.$object.'old'.$htmlAttr)  #added
+        {
+            $htmlObjectColor = 'green'
+        }
+        
+        if (($null -ne $superHashTranslated.$object.'new'.$htmlAttr) -and ($null -ne $superHashTranslated.$object.'old'.$htmlAttr))
+        {
+            if ($null -eq (Compare-Object -ReferenceObject ($superHashTranslated.$object.'new'.$htmlAttr) -DifferenceObject ($superHashTranslated.$object.'old'.$htmlAttr))) # no change
+            {
+                $htmlObjectColor = 'black'
+            }
+            else #changed
+            {
+                $htmlObjectColor = 'darkorange'
+            }
+        }
+        $html += "`t<details>`r`n`t`t<summary><font color=`"" + $htmlObjectColor + "`">" + $htmlAttr + "</font></summary>`r`n"
+        $html += "`t`told: " + $superHashTranslated.$object.'old'.$htmlAttr + "<br>`r`n"
+        $html += "`t`tnew: " + $superHashTranslated.$object.'new'.$htmlAttr + "`r`n`t</details>`r`n"
+    } #foreach new.attribute
+
+    $htmlAttrs = $superHashTranslated.$object.'old'.Keys
+    foreach ($htmlAttr in $htmlAttrs)
+    {
+        if ($null -eq $superHashTranslated.$object.'new'.$htmlAttr)  #deleted. only this case should be processed here
+        {
+            $htmlObjectColor = 'red'
+            $html += "`t<details>`r`n`t`t<summary><font color=`"" + $htmlObjectColor + "`">" + $htmlAttr + "</font></summary>`r`n"
+            $html += "`t`told: " + $superHashTranslated.$object.'old'.$htmlAttr + "<br>`r`n"
+            $html += "`t`tnew: " + $superHashTranslated.$object.'new'.$htmlAttr + "`r`n`t</details>`r`n"
+        }
+    }  #foreach old.attribute
+    $html += "`t</details>`r`n"
 }
-Write-Verbose -Message "Completed shut down successfully."
+
+$html += "<footer><small>NTDSdiff by <a href=`"https://twitter.com/0gtweet`" target=`"blank`">@0gtweet</a></small></footer>`r`n</body>`r`n</html>`r`n"
+$html | Out-File ($ResultFile+".htm") -NoClobber
