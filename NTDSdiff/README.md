@@ -6,7 +6,7 @@ Some things may be a bit better, but it is about cosmetics, not the forensics va
 ### Todo
 
 - [x] clean mess. the code is still not beautiful, but ok for now.
-- [ ] Generate human readable (diff highlighting!) report and not only JSON.
+- [x] Generate human readable (diff highlighting!) report and not only JSON.
 - [ ] SDDL for deleted records
 - [ ] More translations column-attribute and array-value
 - [ ] Take look at sids
