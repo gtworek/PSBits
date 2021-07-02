@@ -32,6 +32,7 @@ foreach ($computer in $computers)
         {
             Write-Host "  Printer found: $DriverName" -ForegroundColor Green
             $disableSpooler = $false
+            BREAK
         }
     }
     if ($disableSpooler)
