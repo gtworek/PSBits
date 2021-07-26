@@ -13,3 +13,6 @@ And the password is `P@ssw0rd`
 And how the problem was solved? By marking this particular 7z encrypted file as malicious. Good job :D - https://www.virustotal.com/gui/file/3df2a71790d70d21dbd58c703562799209c559d0e9d13d4a771ed84c0b93fe89/detection
 
 If you do not trust my 7z, you can build your own MSI. 
+
+Two years later I have realized it is legit and harmless again :D<br>
+And to be fair: After reporting the issue, Defender scans files dropped by msiexec.exe, so it is here mostly like interesting (I hope) PoC, and not a working solution.
