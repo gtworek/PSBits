@@ -1,4 +1,3 @@
-
 # the script STOP and DISABLES Print Spooler service (aka #PrintNightmare) on each server from the list below IF ONLY DEFAULT PRINTERS EXIST.
 # revert if you need: go to services.msc, find the "print spooler" service, change startup type to "automatic" and start the service.
 
@@ -28,7 +27,10 @@ foreach ($computer in $computers)
     $disableSpooler = $true
     foreach ($DriverName in ($printers.DriverName))
     {
-        if (($DriverName -notmatch 'Microsoft XPS Document Writer') -and ($DriverName -notmatch 'Microsoft Print To PDF'))
+        if (($DriverName -notmatch 'Microsoft XPS Document Writer') `
+            -and ($DriverName -notmatch 'Microsoft Print To PDF') `
+            -and ($DriverName -notmatch 'Microsoft Shared Fax Driver') `
+            -and ($DriverName -notmatch 'Send to Microsoft OneNote'))
         {
             Write-Host "  Printer found: $DriverName" -ForegroundColor Green
             $disableSpooler = $false
