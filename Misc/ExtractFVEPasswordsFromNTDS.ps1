@@ -10,8 +10,9 @@
 .OUTPUTS
     None. 
 .NOTES
-    ver.20210828
+    ver.20210828.01
     20210828 Initial version
+    20210828.01 Removed redundant assemly
 #>
 
 $NTDSFile = ".\ntds.dit" 
@@ -21,7 +22,6 @@ $ProgressPreference = "Continue" #  SilentlyContinue = do not display progress b
 
 ##### 
 [void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.Isam.Esent.Interop") # jet
-[void][System.Reflection.Assembly]::LoadWithPartialName("System.DirectoryServices") # AD ACLs. If this does not load for any reason, you can change Get-SDDL code as described in comments there.
 
 $DataTableName = "datatable" # dont change it
 
