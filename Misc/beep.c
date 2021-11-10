@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	NTSTATUS status;
 
 	bspBeepParams.Frequency = 1000;
-	bspBeepParams.Duration = 1000;
+	bspBeepParams.Duration = 999;
 
 	UNICODE_STRING usBeepName = RTL_CONSTANT_STRING(DD_BEEP_DEVICE_NAME_U);
 	OBJECT_ATTRIBUTES objaBeepOA = RTL_CONSTANT_OBJECT_ATTRIBUTES(&usBeepName, 0);
