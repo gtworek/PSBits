@@ -1,6 +1,8 @@
 
-// simple (and successful) approach to low-level generation of some sounds via "\Device\Beep".
+// simple (and successful) approach to generation of some sounds via "\Device\Beep".
 // NOTE: not all PCs have the internal speaker! It means it may remain silent.
+// syntax: beep.exe [freq] [duration]
+// I have no idea why some values work, while others not. And it depends on the machine I use for trying...
 
 #include <Windows.h>
 #include <winternl.h>
@@ -19,9 +21,19 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	HANDLE hDeviceBeep;
 	IO_STATUS_BLOCK iosb;
 	NTSTATUS status;
+	TCHAR* endptr;
 
 	bspBeepParams.Frequency = 1000;
-	bspBeepParams.Duration = 999;
+	bspBeepParams.Duration = 200;
+
+	if (argc > 1)
+	{
+		bspBeepParams.Frequency = _tcstoul(argv[1], &endptr, 10);
+	}
+	if (argc > 2)
+	{
+		bspBeepParams.Duration = _tcstoul(argv[2], &endptr, 10);
+	}
 
 	UNICODE_STRING usBeepName = RTL_CONSTANT_STRING(DD_BEEP_DEVICE_NAME_U);
 	OBJECT_ATTRIBUTES objaBeepOA = RTL_CONSTANT_OBJECT_ATTRIBUTES(&usBeepName, 0);
@@ -53,7 +65,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 
 		if (NT_SUCCESS(status))
 		{
-			_tprintf(TEXT("Beep.\r\n"));
+			_tprintf(TEXT("Beep %lu %lu.\r\n"), bspBeepParams.Frequency, bspBeepParams.Duration);
 		}
 	}
 
