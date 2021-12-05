@@ -16,6 +16,7 @@
 1. Get-ProductPolicy - simple script decoding policy stored in HKLM\SYSTEM\CurrentControlSet\Control\ProductOptions
 1. Get-ServiceSignature - tiny ad-hoc script checking for service binaries signatures.
 1. Install-PSBackdoor - simple but fully working backdoor running on IIS+PowerShell.
+1. LookForLsassDumpInJournal - a tool looking for \*lsass\*.dmp traces in the NTFS journal.
 1. Make-Fake - PowerShell script compiling tiny exe files returning fixed output you need.
 1. MyrtusMetadataExtractor - simple meteadata extractor for the repository published by @Myrtus0x0 at https://github.com/myrtus0x0/Pastebin-Scraping-Results/tree/master/base64MZHeader
 1. No-PowerShell.cs - simple C# code allowing you to run PowerShell script without launching PowerShell processes.
