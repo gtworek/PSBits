@@ -1,6 +1,12 @@
+#ifndef UNICODE
+#error Unicode environment required. Some day, I will fix, if anyone needs it.
+#endif
+
 #include <strsafe.h>
 #include <tchar.h>
 #include <Windows.h>
+#include <Shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
 
 #define READ_JOURNAL_BUFFER_SIZE (1024 * 1024) //buffer for processing journal entries
 #define ISO_DATETIME_LEN 26
@@ -15,8 +21,8 @@ PVOID lpBuffer = NULL;
 TCHAR strIsoDateTime[ISO_DATETIME_LEN];
 LONG lCounter = 0;
 PTCHAR pszVolumeName;
+PWCHAR pwszWildCard = NULL;
 WCHAR pwszFileName[MAX_PATH];
-
 
 __inline PUSN_RECORD_V3 NextUsnRecord(PUSN_RECORD_V3 currentRecord)
 {
@@ -45,15 +51,15 @@ PTCHAR TimeStampToIso8601(
 	if (FileTimeToSystemTime((PFILETIME)timeStamp, &systemTime))
 	{
 		StringCchPrintf(pszBuffer,
-			ISO_DATETIME_LEN,
-			TEXT("%04i-%02i-%02iT%02i:%02i:%02i.%03iZ"),
-			systemTime.wYear,
-			systemTime.wMonth,
-			systemTime.wDay,
-			systemTime.wHour,
-			systemTime.wMinute,
-			systemTime.wSecond,
-			systemTime.wMilliseconds
+		                ISO_DATETIME_LEN,
+		                TEXT("%04i-%02i-%02iT%02i:%02i:%02i.%03iZ"),
+		                systemTime.wYear,
+		                systemTime.wMonth,
+		                systemTime.wDay,
+		                systemTime.wHour,
+		                systemTime.wMinute,
+		                systemTime.wSecond,
+		                systemTime.wMilliseconds
 		);
 	}
 	return pszBuffer;
@@ -63,13 +69,23 @@ PTCHAR TimeStampToIso8601(
 int _tmain(int argc, PTCHAR argv[])
 {
 	pszVolumeName = _T("\\\\.\\C:");
-	if (argc == 2)
+	pwszWildCard = _T("*lsass*.dmp");
+	if (argc > 1)
 	{
 		//you may use \\.\X: as a parameter if you want.
 		pszVolumeName = argv[1];
 	}
+	if (argc > 2)
+	{
+		// and wildcard, using lazy params parsing, which means you must
+		// use volume as the first param and wildcard as the second one.
+		pwszWildCard = argv[2];
+	}
 
-	_tprintf(TEXT("Trying to open %s ..."), pszVolumeName);
+	_tprintf(TEXT("\r\nVolume to check: %s\r\n"), pszVolumeName);
+	_tprintf(TEXT("Pattern to find: %s\r\n\r\n"), pwszWildCard);
+
+	_tprintf(TEXT("Trying to open volume ..."), pszVolumeName);
 	hUsnFileHandle = CreateFile(
 		pszVolumeName,
 		FILE_WRITE_ATTRIBUTES,
@@ -177,23 +193,19 @@ int _tmain(int argc, PTCHAR argv[])
 			switch (UsnRecordV3->MajorVersion) //ver 2, 3, and 4 have the same structure fields at the beginning. 
 			{
 			case 3: //only ver 3 is supported, as it is the only one happening on disks I had a chance to analyze.
-				StringCchPrintf(pwszFileName, MAX_PATH, _T("%.*ls\t"), UsnRecordV3->FileNameLength / (int)sizeof(WCHAR),
-					(UsnRecordV3->FileName));
-				_wcslwr_s(pwszFileName, MAX_PATH);
-				if (NULL != wcsstr(pwszFileName, L".dmp"))
+				StringCchPrintf(pwszFileName, MAX_PATH, _T("%.*ls"), UsnRecordV3->FileNameLength / (int)sizeof(WCHAR),
+				                (UsnRecordV3->FileName));
+				if (PathMatchSpec(pwszFileName, pwszWildCard))
 				{
-					if (NULL != wcsstr(pwszFileName, L"lsass"))
-					{
-						_tprintf(_T("%s\t%ls\r\n"), TimeStampToIso8601(&UsnRecordV3->TimeStamp, strIsoDateTime),
-							pwszFileName);
-					}
+					_tprintf(_T("%s\t%ls\r\n"), TimeStampToIso8601(&UsnRecordV3->TimeStamp, strIsoDateTime),
+					         pwszFileName);
 				}
 				break; //ver 3
 			default:
 				_tprintf(TEXT("Unknown record version. Ver. %i.%i. Length: %i\r\n"),
-					UsnRecordV3->MajorVersion,
-					UsnRecordV3->MinorVersion,
-					UsnRecordV3->RecordLength);
+				         UsnRecordV3->MajorVersion,
+				         UsnRecordV3->MinorVersion,
+				         UsnRecordV3->RecordLength);
 				return ERROR_UNSUPPORTED_TYPE;
 				break;
 			}
