@@ -15,4 +15,4 @@ If we combine all these facts, we can create an IFilter, which:<br>
 Effectively it means IFilters are quite powerful way of persistence with some remotely initiated/defined capabilities.<p>
 It is not a bug, as installing the IFilter requires administrative privileges to create registry hives under the HKLM\SOFTWARE\Classes\CLSID, but at the same time it opens new (at least for me) opportunities.<p>
 I am providing simple and innocent PoC DLL. It reacts on .filtersample extension, and reads the file content. The activity may be observed using dbgview.exe from SysInternals. Register/unregister via regsvr32.exe.<p>
-The source code will be provided some day, after I make it neat enough.
+The source code is not beatiful, but it works. Feel free to contribute.
