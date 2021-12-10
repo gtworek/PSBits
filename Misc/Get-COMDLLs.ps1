@@ -63,9 +63,9 @@ foreach ($Inproc32 in $Inproclist)
 # Let's display the array
 if (Test-Path Variable:PSise)
 {
-    $arrtmp | Out-GridView
+    $arrExp | Out-GridView
 }
 else
 {
-    $arrtmp | Format-List
+    $arrExp | Format-List
 }
