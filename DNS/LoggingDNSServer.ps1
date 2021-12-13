@@ -1,10 +1,12 @@
 param( $address="Any", $port=53)
 
-try{
+try
+{
 	$endpoint = new-object System.Net.IPEndPoint( [IPAddress]::$address, $port )
 	$udpclient = new-object System.Net.Sockets.UdpClient $port
 }
-catch{
+catch
+{
 	throw $_
 	exit -1
 }
@@ -16,10 +18,9 @@ while( $true )
 	if( $udpclient.Available )
 	{
 		$content = $udpclient.Receive( [ref]$endpoint )
-#        $content | Format-Hex
-        Write-Host "Client IP: ", $endpoint.Address.IPAddressToString, " -> " -NoNewline
+        # $content | Format-Hex
+        Write-Host "Client IP: ", $endpoint.Address.IPAddressToString, " ->  " -NoNewline
         $qlen=$content[12]
-        $qry=""
         for ($i=0; $i -lt $qlen; $i++)
         {
             $charx=([char][byte]($content[13+$i]))
