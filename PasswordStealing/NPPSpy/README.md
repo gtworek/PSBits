@@ -25,3 +25,6 @@ Re-logon is required, reboot is not required.
 
 #### Documentation:
 The idea is somewhat documented at https://docs.microsoft.com/en-us/windows/win32/api/npapi/nf-npapi-nplogonnotify
+
+#### Video
+I did my best to explain the flow on a short video: https://youtu.be/ggY3srD9dYs
