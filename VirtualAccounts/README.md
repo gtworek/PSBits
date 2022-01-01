@@ -22,3 +22,5 @@ Enjoy!
 BTW, the most useful source of knowledge, was the Microsoft patent describing how IIS impersonates worker processes. You can see it at: https://patents.justia.com/patent/8640215 
 
 And couple of moments later I have realized what superpower I've got. I can put ANYTHING into the valid token. Did you ever wanted to be TrustedInstaller? Or it is just me...? Grab your copy of `TrustedInstallerCmd` and have fun too! :) 
+
+The `TrustedInstallerCmd2` does not require psexec anymore and it is less talkative. 
