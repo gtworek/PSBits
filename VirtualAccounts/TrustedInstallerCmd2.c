@@ -253,10 +253,9 @@ DWORD getWinLogonPID(VOID)
 
 DWORD elevateSystem(VOID)
 {
-	HANDLE currentTokenHandle = NULL;
 	BOOL bStatus;
 	DWORD dwLastError;
-
+	HANDLE currentTokenHandle = NULL;
 	bStatus = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &currentTokenHandle);
 	if (!bStatus)
 	{
@@ -268,17 +267,22 @@ DWORD elevateSystem(VOID)
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_DEBUG_NAME) returned %lu\r\n"), GetLastError());
-		return GetLastError();
+		dwLastError = GetLastError();
+		CloseHandle(currentTokenHandle);
+		return dwLastError;
 	}
 
 	bStatus = SetPrivilege(currentTokenHandle, SE_IMPERSONATE_NAME);
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_IMPERSONATE_NAME) returned %lu\r\n"), GetLastError());
-		return GetLastError();
+		dwLastError = GetLastError();
+		CloseHandle(currentTokenHandle);
+		return dwLastError;
 	}
+	CloseHandle(currentTokenHandle);
 
-	HANDLE processHandle;
+
 	HANDLE tokenHandle = NULL;
 	HANDLE duplicateTokenHandle = NULL;
 	DWORD pidToImpersonate;
@@ -290,6 +294,7 @@ DWORD elevateSystem(VOID)
 		return ERROR_ERRORS_ENCOUNTERED;
 	}
 
+	HANDLE processHandle;
 	processHandle = OpenProcess(PROCESS_ALL_ACCESS, TRUE, pidToImpersonate);
 	if (NULL == processHandle)
 	{
@@ -305,6 +310,7 @@ DWORD elevateSystem(VOID)
 		CloseHandle(processHandle);
 		return dwLastError;
 	}
+	CloseHandle(processHandle);
 
 	SECURITY_IMPERSONATION_LEVEL seimp = SecurityImpersonation;
 	TOKEN_TYPE tk = TokenPrimary;
@@ -314,7 +320,6 @@ DWORD elevateSystem(VOID)
 	{
 		_tprintf(_T("ERROR: DuplicateTokenEx returned %lu\r\n"), GetLastError());
 		dwLastError = GetLastError();
-		CloseHandle(processHandle);
 		CloseHandle(tokenHandle);
 		return dwLastError;
 	}
@@ -323,19 +328,19 @@ DWORD elevateSystem(VOID)
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_INCREASE_QUOTA_NAME) returned %lu\r\n"), GetLastError());
+		dwLastError = GetLastError();
 		CloseHandle(duplicateTokenHandle);
 		CloseHandle(tokenHandle);
-		CloseHandle(processHandle);
-		return GetLastError();
+		return dwLastError;
 	}
 	bStatus = SetPrivilege(duplicateTokenHandle, SE_ASSIGNPRIMARYTOKEN_NAME);
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_ASSIGNPRIMARYTOKEN_NAME) returned %lu\r\n"), GetLastError());
+		dwLastError = GetLastError();
 		CloseHandle(duplicateTokenHandle);
 		CloseHandle(tokenHandle);
-		CloseHandle(processHandle);
-		return GetLastError();
+		return dwLastError;
 	}
 
 	bStatus = ImpersonateLoggedOnUser(duplicateTokenHandle);
@@ -345,13 +350,11 @@ DWORD elevateSystem(VOID)
 		dwLastError = GetLastError();
 		CloseHandle(duplicateTokenHandle);
 		CloseHandle(tokenHandle);
-		CloseHandle(processHandle);
 		return dwLastError;
 	}
 
 	CloseHandle(duplicateTokenHandle);
 	CloseHandle(tokenHandle);
-	CloseHandle(processHandle);
 	return ERROR_SUCCESS;
 }
 
