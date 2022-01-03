@@ -323,12 +323,18 @@ DWORD elevateSystem(VOID)
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_INCREASE_QUOTA_NAME) returned %lu\r\n"), GetLastError());
+		CloseHandle(duplicateTokenHandle);
+		CloseHandle(tokenHandle);
+		CloseHandle(processHandle);
 		return GetLastError();
 	}
 	bStatus = SetPrivilege(duplicateTokenHandle, SE_ASSIGNPRIMARYTOKEN_NAME);
 	if (!bStatus)
 	{
 		_tprintf(_T("ERROR: SetPrivilege(SE_ASSIGNPRIMARYTOKEN_NAME) returned %lu\r\n"), GetLastError());
+		CloseHandle(duplicateTokenHandle);
+		CloseHandle(tokenHandle);
+		CloseHandle(processHandle);
 		return GetLastError();
 	}
 
