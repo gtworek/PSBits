@@ -10,7 +10,7 @@ My DLL does couple of things:
 <p>
 Any way of loading DLL will work, but for testing I'd suggest:
 
- ```rundll32.exe IgnoreAppLocker.dll doIt cmd.exe```. 
+ ```rundll32.exe IgnoreAppLocker.dll doIt cmd.exe``` 
 
 The "doIt" parameter is not required, but makes the command run without annoying error messages. The freshly created cmd.exe runs as localsystem and allows you to launch any other exe regardless AppLocker policies. And nothing launched from this cmd will be recorded in the AppLocker event log.<p>
 
