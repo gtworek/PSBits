@@ -111,7 +111,10 @@ for ($j = 0; $j -lt 5; $j++)
                     {
                         if ($word.ToCharArray() -contains $guessLetter)
                         {
-                            $newWordlist += $word
+                            if ($word.ToCharArray()[$i] -ne $guessLetter) #it would be green
+                            {
+                                $newWordlist += $word
+                            }
                         }
                     }
                     break
