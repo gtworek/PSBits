@@ -1,19 +1,20 @@
-$wordlistURL = "https://github.com/dwyl/english-words/raw/master/words_alpha.txt" #other lists may require slightly different processing. 
-$wordlistRAW = Invoke-WebRequest -Uri $wordlistURL -UseBasicParsing
-$wordlist = $wordlistRAW.Content -split "\r\n" 
-Write-Host $wordlist.Count "words downloaded. Processing..."
-
-$newWordlist = @()
-foreach ($word in $wordlist)
+if ($null -eq $wordlist5)
 {
-    if (($word.Trim()).Length -eq 5)
+    $wordlistURL = "https://github.com/dwyl/english-words/raw/master/words_alpha.txt" #other lists may require slightly different processing. 
+    $wordlistRAW = Invoke-WebRequest -Uri $wordlistURL -UseBasicParsing
+    $wordlist = $wordlistRAW.Content -split "\r\n" 
+    Write-Host $wordlist.Count "words downloaded. Processing..."
+
+    $wordlist5 = @()
+    foreach ($word in $wordlist)
     {
-        $newWordlist += $word.ToUpper()
+        if (($word.Trim()).Length -eq 5)
+        {
+            $wordlist5 += $word.ToUpper()
+        }
     }
 }
-
-$wordlist = $newWordlist
-
+$wordlist = $wordlist5
 
 for ($j = 0; $j -lt 5; $j++)
 {
@@ -73,8 +74,6 @@ for ($j = 0; $j -lt 5; $j++)
         }
     }
 
-
-
     for ($i = 0; $i -lt 5; $i++)
     {
         $bc = switch (($answer.ToCharArray())[$i])
@@ -87,7 +86,8 @@ for ($j = 0; $j -lt 5; $j++)
         Write-Host ($guess.ToCharArray())[$i] -NoNewline -ForegroundColor White -BackgroundColor $bc
     }
     Write-Host
-
+    Write-Host "Analyzing..."
+    Write-Host
 
     for ($i = 0; $i -lt 5; $i++)
     {
@@ -129,5 +129,4 @@ for ($j = 0; $j -lt 5; $j++)
         }
         $wordlist = $newWordlist
     }
-
 }
