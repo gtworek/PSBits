@@ -5,12 +5,12 @@ if ($null -eq $wordlist5)
     $wordlist = $wordlistRAW.Content -split "\r\n" 
     Write-Host $wordlist.Count "words downloaded. Processing..."
 
-    $wordlist5 = @()
+    $wordlist5 = [System.Collections.ArrayList]@()
     foreach ($word in $wordlist)
     {
         if (($word.Trim()).Length -eq 5)
         {
-            $wordlist5 += $word.ToUpper()
+            $null = $wordlist5.Add($word.ToUpper())
         }
     }
 }
@@ -91,7 +91,7 @@ for ($j = 0; $j -lt 5; $j++)
 
     for ($i = 0; $i -lt 5; $i++)
     {
-        $newWordlist = @()
+        $newWordlist = [System.Collections.ArrayList]@()
         $guessLetter = ($guess.ToCharArray())[$i]
         $answerLetter = ($answer.ToCharArray())[$i]
         switch ($answerLetter)
@@ -101,7 +101,7 @@ for ($j = 0; $j -lt 5; $j++)
                     {
                         if ($word.ToCharArray() -notcontains $guessLetter)
                         {
-                            $newWordlist += $word
+                            $null = $newWordlist.Add($word)
                         }
                     }
                     break
@@ -113,7 +113,7 @@ for ($j = 0; $j -lt 5; $j++)
                         {
                             if ($word.ToCharArray()[$i] -ne $guessLetter) #it would be green
                             {
-                                $newWordlist += $word
+                                $null = $newWordlist.Add($word)
                             }
                         }
                     }
@@ -124,7 +124,7 @@ for ($j = 0; $j -lt 5; $j++)
                     {
                         if ($word.ToCharArray()[$i] -eq $guessLetter)
                         {
-                            $newWordlist += $word
+                            $null = $newWordlist.Add($word)
                         }
                     }
                     break
