@@ -1,19 +1,20 @@
-$wordlistURL = "https://github.com/dwyl/english-words/raw/master/words_alpha.txt" #other lists may require slightly different processing. 
-$wordlistRAW = Invoke-WebRequest -Uri $wordlistURL -UseBasicParsing
-$wordlist = $wordlistRAW.Content -split "\r\n" 
-Write-Host $wordlist.Count "words downloaded. Processing..."
-
-$newWordlist =  [System.Collections.ArrayList]@()
-foreach ($word in $wordlist)
+if ($null -eq $wordlist5)
 {
-    if (($word.Trim()).Length -eq 5)
+    $wordlistURL = "https://github.com/dwyl/english-words/raw/master/words_alpha.txt" #other lists may require slightly different processing. 
+    $wordlistRAW = Invoke-WebRequest -Uri $wordlistURL -UseBasicParsing
+    $wordlist = $wordlistRAW.Content -split "\r\n" 
+    Write-Host $wordlist.Count "words downloaded. Processing..."
+
+    $wordlist5 = [System.Collections.ArrayList]@()
+    foreach ($word in $wordlist)
     {
-        $null = $newWordlist.Add($word.ToUpper())
+        if (($word.Trim()).Length -eq 5)
+        {
+            $null = $wordlist5.Add($word.ToUpper())
+        }
     }
 }
-
-$wordlist = $newWordlist
-
+$wordlist = $wordlist5
 
 for ($j = 0; $j -lt 5; $j++)
 {
@@ -73,8 +74,6 @@ for ($j = 0; $j -lt 5; $j++)
         }
     }
 
-
-
     for ($i = 0; $i -lt 5; $i++)
     {
         $bc = switch (($answer.ToCharArray())[$i])
@@ -87,7 +86,8 @@ for ($j = 0; $j -lt 5; $j++)
         Write-Host ($guess.ToCharArray())[$i] -NoNewline -ForegroundColor White -BackgroundColor $bc
     }
     Write-Host
-
+    Write-Host "Analyzing..."
+    Write-Host
 
     for ($i = 0; $i -lt 5; $i++)
     {
@@ -111,7 +111,10 @@ for ($j = 0; $j -lt 5; $j++)
                     {
                         if ($word.ToCharArray() -contains $guessLetter)
                         {
-                            $null = $newWordlist.Add($word)
+                            if ($word.ToCharArray()[$i] -ne $guessLetter) #it would be green
+                            {
+                                $null = $newWordlist.Add($word)
+                            }
                         }
                     }
                     break
@@ -129,5 +132,4 @@ for ($j = 0; $j -lt 5; $j++)
         }
         $wordlist = $newWordlist
     }
-
 }
