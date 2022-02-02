@@ -27,7 +27,7 @@ foreach ($evt in $evts)
         $filepath = $evt.Message.Substring(0,$evt.Message.IndexOf($sstr2))
     }
     $filepath = $filepath.ToLower()
-    $isdll = (($filepath.EndsWith(".dll")) -or ($filepath.ToLower().EndsWith(".ocx")))
+    $isdll = (($filepath.EndsWith(".dll")) -or ($filepath.ToLower().EndsWith(".ocx")) -or ($filepath.ToLower().EndsWith(".drv")))
     $isexe = $filepath.EndsWith(".exe")
     if (($filepath -ne "") -and !$isdll -and !$isexe)
     {
