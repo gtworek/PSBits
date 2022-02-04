@@ -16,3 +16,5 @@ The "doIt" parameter is not required, but makes the command run without annoying
 
 You can see messages from the DLL using [DebugView utility from SysInternals](https://docs.microsoft.com/en-us/sysinternals/downloads/debugview). May be useful for troubleshooting.
 
+Simple demonstration:<br>
+[![YouTube](https://img.youtube.com/vi/4SgaCdiQGJY/0.jpg)](https://youtu.be/4SgaCdiQGJY) <p>
