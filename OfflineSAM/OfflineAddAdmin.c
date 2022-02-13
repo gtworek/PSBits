@@ -1,3 +1,6 @@
+#ifndef UNICODE
+#error Unicode environment required. I will fix it sooner or later.
+
 #include <Windows.h>
 #include <tchar.h>
 #include <NTSecAPI.h>
@@ -20,8 +23,8 @@ OFFLINELSA_HANDLE hOfflineLsaPolicy;
 NTSTATUS
 NTAPI
 LsaOfflineOpenPolicy(
-	_In_ LPWSTR pszWindowsDirectory,
-	_Out_ POFFLINELSA_HANDLE PolicyHandle
+	LPWSTR pszWindowsDirectory,
+	POFFLINELSA_HANDLE PolicyHandle
 )
 {
 	static LSAOFFLINEOPENPOLICY pfnLsaOfflineOpenPolicy = NULL;
@@ -40,7 +43,7 @@ LsaOfflineOpenPolicy(
 NTSTATUS
 NTAPI
 LsaOfflineClose(
-	_In_ OFFLINELSA_HANDLE PolicyHandle
+	OFFLINELSA_HANDLE PolicyHandle
 )
 {
 	static LSAOFFLINECLOSE pfnLsaOfflineClose = NULL;
@@ -59,11 +62,11 @@ LsaOfflineClose(
 NTSTATUS
 NTAPI
 LsaOfflineEnumerateAccounts(
-	_In_ OFFLINELSA_HANDLE PolicyHandle,
-	_Inout_ PLSA_ENUMERATION_HANDLE EnumerationContext,
-	_Out_ PVOID* Buffer,
-	_In_ ULONG PreferredMaximumLength,
-	_Out_ PULONG CountReturned
+	OFFLINELSA_HANDLE PolicyHandle,
+	PLSA_ENUMERATION_HANDLE EnumerationContext,
+	PVOID* Buffer,
+	ULONG PreferredMaximumLength,
+	PULONG CountReturned
 )
 {
 	static LSAOFFLINEENUMERATEACCOUNTS pfnLsaOfflineEnumerateAccounts = NULL;
@@ -87,7 +90,7 @@ LsaOfflineEnumerateAccounts(
 NTSTATUS
 NTAPI
 LsaOfflineFreeMemory(
-	_Frees_ptr_opt_ PVOID Buffer
+	PVOID Buffer
 )
 {
 	static LSAOFFLINEFREEMEMORY pfnLsaOfflineFreeMemory = NULL;
@@ -106,10 +109,10 @@ LsaOfflineFreeMemory(
 NTSTATUS
 NTAPI
 LsaOfflineEnumerateAccountRights(
-	_In_ OFFLINELSA_HANDLE PolicyHandle,
-	_In_ PSID AccountSid,
-	_Outptr_result_buffer_(*CountOfRights) PLSA_UNICODE_STRING* UserRights,
-	_Out_ PULONG CountOfRights
+	OFFLINELSA_HANDLE PolicyHandle,
+	PSID AccountSid,
+	PLSA_UNICODE_STRING* UserRights,
+	PULONG CountOfRights
 )
 {
 	static LSAOFFLINEENUMERATEACCOUNTRIGHTS pfnLsaOfflineEnumerateAccountRights = NULL;
@@ -132,10 +135,10 @@ LsaOfflineEnumerateAccountRights(
 NTSTATUS
 NTAPI
 LsaOfflineAddAccountRights(
-	_In_ OFFLINELSA_HANDLE PolicyHandle,
-	_In_ PSID AccountSid,
-	_In_reads_(CountOfRights) PLSA_UNICODE_STRING UserRights,
-	_In_ ULONG CountOfRights
+	OFFLINELSA_HANDLE PolicyHandle,
+	PSID AccountSid,
+	PLSA_UNICODE_STRING UserRights,
+	ULONG CountOfRights
 )
 {
 	static LSAOFFLINEADDACCOUNTRIGHTS pfnLsaOfflineAddAccountRights = NULL;
