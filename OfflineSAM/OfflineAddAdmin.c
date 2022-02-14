@@ -1,21 +1,20 @@
-#ifndef UNICODE
-#error Unicode environment required. I will fix it sooner or later.
-
 #include <Windows.h>
 #include <tchar.h>
 #include <NTSecAPI.h>
 #include <sddl.h>
 
+#define READONLYMODE 0 //0 - normal use. 1 - lists privileges for all sids and exits
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 
-typedef PVOID OFFLINELSA_HANDLE, * POFFLINELSA_HANDLE;
+typedef PVOID OFFLINELSA_HANDLE, *POFFLINELSA_HANDLE;
 
-typedef NTSTATUS(WINAPI* LSAOFFLINEOPENPOLICY)(LPWSTR, POFFLINELSA_HANDLE);
-typedef NTSTATUS(WINAPI* LSAOFFLINECLOSE)(OFFLINELSA_HANDLE);
-typedef NTSTATUS(WINAPI* LSAOFFLINEENUMERATEACCOUNTS)(OFFLINELSA_HANDLE, PLSA_ENUMERATION_HANDLE, PVOID*, ULONG, PULONG);
-typedef NTSTATUS(WINAPI* LSAOFFLINEFREEMEMORY)(PVOID);
-typedef NTSTATUS(WINAPI* LSAOFFLINEENUMERATEACCOUNTRIGHTS)(OFFLINELSA_HANDLE, PSID, PLSA_UNICODE_STRING*, PULONG);
-typedef NTSTATUS(WINAPI* LSAOFFLINEADDACCOUNTRIGHTS)(OFFLINELSA_HANDLE, PSID, PLSA_UNICODE_STRING, ULONG);
+typedef NTSTATUS (WINAPI* LSAOFFLINEOPENPOLICY)(LPWSTR, POFFLINELSA_HANDLE);
+typedef NTSTATUS (WINAPI* LSAOFFLINECLOSE)(OFFLINELSA_HANDLE);
+typedef NTSTATUS (WINAPI* LSAOFFLINEENUMERATEACCOUNTS)(OFFLINELSA_HANDLE, PLSA_ENUMERATION_HANDLE, PVOID*, ULONG,
+                                                       PULONG);
+typedef NTSTATUS (WINAPI* LSAOFFLINEFREEMEMORY)(PVOID);
+typedef NTSTATUS (WINAPI* LSAOFFLINEENUMERATEACCOUNTRIGHTS)(OFFLINELSA_HANDLE, PSID, PLSA_UNICODE_STRING*, PULONG);
+typedef NTSTATUS (WINAPI* LSAOFFLINEADDACCOUNTRIGHTS)(OFFLINELSA_HANDLE, PSID, PLSA_UNICODE_STRING, ULONG);
 
 HMODULE hOfflineLsaDLL;
 OFFLINELSA_HANDLE hOfflineLsaPolicy;
@@ -72,7 +71,9 @@ LsaOfflineEnumerateAccounts(
 	static LSAOFFLINEENUMERATEACCOUNTS pfnLsaOfflineEnumerateAccounts = NULL;
 	if (NULL == pfnLsaOfflineEnumerateAccounts)
 	{
-		pfnLsaOfflineEnumerateAccounts = (LSAOFFLINEENUMERATEACCOUNTS)(LPVOID)GetProcAddress(hOfflineLsaDLL, "LsaOfflineEnumerateAccounts");
+		pfnLsaOfflineEnumerateAccounts = (LSAOFFLINEENUMERATEACCOUNTS)(LPVOID)GetProcAddress(
+			hOfflineLsaDLL,
+			"LsaOfflineEnumerateAccounts");
 	}
 	if (NULL == pfnLsaOfflineEnumerateAccounts)
 	{
@@ -118,7 +119,9 @@ LsaOfflineEnumerateAccountRights(
 	static LSAOFFLINEENUMERATEACCOUNTRIGHTS pfnLsaOfflineEnumerateAccountRights = NULL;
 	if (NULL == pfnLsaOfflineEnumerateAccountRights)
 	{
-		pfnLsaOfflineEnumerateAccountRights = (LSAOFFLINEENUMERATEACCOUNTRIGHTS)(LPVOID)GetProcAddress(hOfflineLsaDLL, "LsaOfflineEnumerateAccountRights");
+		pfnLsaOfflineEnumerateAccountRights = (LSAOFFLINEENUMERATEACCOUNTRIGHTS)(LPVOID)GetProcAddress(
+			hOfflineLsaDLL,
+			"LsaOfflineEnumerateAccountRights");
 	}
 	if (NULL == pfnLsaOfflineEnumerateAccountRights)
 	{
@@ -144,7 +147,9 @@ LsaOfflineAddAccountRights(
 	static LSAOFFLINEADDACCOUNTRIGHTS pfnLsaOfflineAddAccountRights = NULL;
 	if (NULL == pfnLsaOfflineAddAccountRights)
 	{
-		pfnLsaOfflineAddAccountRights = (LSAOFFLINEADDACCOUNTRIGHTS)(LPVOID)GetProcAddress(hOfflineLsaDLL, "LsaOfflineAddAccountRights");
+		pfnLsaOfflineAddAccountRights = (LSAOFFLINEADDACCOUNTRIGHTS)(LPVOID)GetProcAddress(
+			hOfflineLsaDLL,
+			"LsaOfflineAddAccountRights");
 	}
 	if (NULL == pfnLsaOfflineAddAccountRights)
 	{
@@ -158,12 +163,13 @@ LsaOfflineAddAccountRights(
 		CountOfRights);
 }
 
+
 int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(envp);
 
-	if (argv[1] == NULL)
+	if (2 != argc)
 	{
 		_tprintf(_T("Usage: OfflineAddAdmin.exe windows_folder\r\n"));
 		_tprintf(_T(" where windows_folder is the offline Windows folder i.e. D:\\Windows\r\n"));
@@ -176,16 +182,20 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		return ERROR_DELAY_LOAD_FAILED;
 	}
 
+	//making unicode agnostic
+	WCHAR wszWorkingDir[MAX_PATH] = {0};
+	swprintf(wszWorkingDir, sizeof(wszWorkingDir) / sizeof(WCHAR), _T("%s"), argv[1]);
+
 	NTSTATUS status;
 
-	status = LsaOfflineOpenPolicy(argv[1], &hOfflineLsaPolicy);
+	status = LsaOfflineOpenPolicy(wszWorkingDir, &hOfflineLsaPolicy);
 	if (!NT_SUCCESS(status))
 	{
-		_tprintf(_T("ERROR: LsaOfflineOpenPolicy() returned %li.\r\n"), LsaNtStatusToWinError(status));
+		_tprintf(_T("ERROR: LsaOfflineOpenPolicy() returned %lu.\r\n"), LsaNtStatusToWinError(status));
 		return (int)LsaNtStatusToWinError(status);
 	}
 
-	LSA_ENUMERATION_HANDLE lsaEnumContext = { 0 };
+	LSA_ENUMERATION_HANDLE lsaEnumContext = {0};
 	PLSA_ENUMERATION_INFORMATION plsaSidsBuffer = NULL;
 	ULONG ulCountOfSids = 0;
 
@@ -196,21 +206,26 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	// - Never seen STATUS_MORE_ENTRIES as a result, but stadard checking covers it. See documentation for LsaEnumerateTrustedDomainsEx().
 	// - Checking buffer == NULL just in case.
 	// - Calling LsaOfflineFreeMemory as I'd call LsaFreeMemory.
-	status = LsaOfflineEnumerateAccounts(hOfflineLsaPolicy, &lsaEnumContext, (PVOID*)&plsaSidsBuffer, 0, &ulCountOfSids);
+	status = LsaOfflineEnumerateAccounts(
+		hOfflineLsaPolicy,
+		&lsaEnumContext,
+		(PVOID*)&plsaSidsBuffer,
+		0,
+		&ulCountOfSids);
 	if (!NT_SUCCESS(status) || (!plsaSidsBuffer))
 	{
-		_tprintf(_T("ERROR: LsaOfflineEnumerateAccounts() returned %li.\r\n"), LsaNtStatusToWinError(status));
+		_tprintf(_T("ERROR: LsaOfflineEnumerateAccounts() returned %lu.\r\n"), LsaNtStatusToWinError(status));
 		LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
 		return (int)LsaNtStatusToWinError(status);
 	}
 
-	_tprintf(_T("Number of SIDs in offline SAM: %li.\r\n"), ulCountOfSids);
+	_tprintf(_T("Number of SIDs in offline SAM: %lu.\r\n"), ulCountOfSids);
 
 	PLSA_UNICODE_STRING plsaRightsBuffer = NULL;
 	ULONG ulCountOfRights = 0;
 
-	BYTE pSidAdmins[SECURITY_MAX_SID_SIZE] = { 0 };
-	BYTE pSidUsers[SECURITY_MAX_SID_SIZE] = { 0 };
+	BYTE pSidAdmins[SECURITY_MAX_SID_SIZE] = {0};
+	BYTE pSidUsers[SECURITY_MAX_SID_SIZE] = {0};
 	DWORD dwSidSize;
 	BOOL bStatus;
 
@@ -218,7 +233,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	bStatus = CreateWellKnownSid(WinBuiltinAdministratorsSid, NULL, (PSID)pSidAdmins, &dwSidSize);
 	if (!bStatus)
 	{
-		_tprintf(_T("ERROR: CreateWellKnownSid() returned %lu\r\n"), GetLastError());
+		_tprintf(_T("ERROR: CreateWellKnownSid(WinBuiltinAdministratorsSid) returned %lu.\r\n"), GetLastError());
 		LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
 		return (int)GetLastError();
 	}
@@ -227,7 +242,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	bStatus = CreateWellKnownSid(WinBuiltinUsersSid, NULL, (PSID)pSidUsers, &dwSidSize);
 	if (!bStatus)
 	{
-		_tprintf(_T("ERROR: CreateWellKnownSid() returned %lu\r\n"), GetLastError());
+		_tprintf(_T("ERROR: CreateWellKnownSid(WinBuiltinUsersSid) returned %lu.\r\n"), GetLastError());
 		LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
 		return (int)GetLastError();
 	}
@@ -238,24 +253,26 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		PSID sid = plsaSidsBuffer[i].Sid;
 		LPTSTR szSidStr = NULL;
 
-		ConvertSidToStringSid(sid, &szSidStr);
-		_tprintf(_T("SID[%i]: %s\r\n"), i, szSidStr);
-
+#if READONLYMODE != 1
+		// for r/w mode we ignore non-admins. for r/o - display all.
 		if (!EqualSid(pSidAdmins, sid))
 		{
-			LocalFree(szSidStr);
 			continue;
 		}
+#endif
+
+		ConvertSidToStringSid(sid, &szSidStr);
+		_tprintf(_T("SID[%i]: %s\r\n"), i, szSidStr);
 
 		status = LsaOfflineEnumerateAccountRights(hOfflineLsaPolicy, sid, &plsaRightsBuffer, &ulCountOfRights);
 		if (!NT_SUCCESS(status))
 		{
-			_tprintf(_T("ERROR: LsaOfflineEnumerateAccountRights() returned %li.\r\n"), LsaNtStatusToWinError(status));
+			_tprintf(_T("ERROR: LsaOfflineEnumerateAccountRights() returned %lu.\r\n"), LsaNtStatusToWinError(status));
 			LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
 			return (int)LsaNtStatusToWinError(status);
 		}
 
-		_tprintf(_T("    Number of rights assigned to %s in offline SAM: %li.\r\n"), szSidStr, ulCountOfRights);
+		_tprintf(_T("    Number of rights assigned to %s in offline SAM: %lu.\r\n"), szSidStr, ulCountOfRights);
 		LocalFree(szSidStr);
 
 		for (ULONG j = 0; j < ulCountOfRights; j++)
@@ -264,6 +281,12 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		}
 	}
 
+#if READONLYMODE != 0
+	//emergency exit for read-only use
+	LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
+	return 0;
+#endif
+
 	if (!plsaRightsBuffer) //no privs??
 	{
 		_tprintf(_T("ERROR: No privileges for local administrators found.\r\n"));
@@ -271,7 +294,8 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		return ERROR_NO_SUCH_GROUP;
 	}
 
-	//let's go through sids trying to spot users and apply privileges from the buffer
+	BOOL bNewRightsApplied = FALSE;
+	//let's go through sids trying to spot SID for "Users" and apply privileges from the buffer
 	for (ULONG i = 0; i < ulCountOfSids; i++)
 	{
 		PSID sid = plsaSidsBuffer[i].Sid;
@@ -280,26 +304,35 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		{
 			continue;
 		}
+		_tprintf(_T("Target SID found, applying new rights...\r\n"));
 		status = LsaOfflineAddAccountRights(hOfflineLsaPolicy, sid, plsaRightsBuffer, ulCountOfRights);
 		if (!NT_SUCCESS(status))
 		{
-			_tprintf(_T("ERROR: LsaOfflineAddAccountRights() returned %li.\r\n"), LsaNtStatusToWinError(status));
+			_tprintf(_T("ERROR: LsaOfflineAddAccountRights() returned %lu.\r\n"), LsaNtStatusToWinError(status));
 			LsaOfflineClose(hOfflineLsaPolicy); //let's try, ignoring the result
 			return (int)LsaNtStatusToWinError(status);
 		}
+		bNewRightsApplied = TRUE;
 	}
 
-	LsaOfflineFreeMemory(plsaRightsBuffer); //best effort, ignore failures.
-	LsaOfflineFreeMemory(plsaSidsBuffer); //best effort, ignore failures.
-	status = LsaOfflineClose(hOfflineLsaPolicy);
+	if (!bNewRightsApplied)
+	{
+		_tprintf(_T("WARNING: New rights not applied.\r\n"));
+	}
+
+
+	//cleanup
+	status = LsaOfflineFreeMemory(plsaRightsBuffer); //best effort, ignore failures.
+	status = LsaOfflineFreeMemory(plsaSidsBuffer); //best effort, ignore failures.
+	status = LsaOfflineClose(hOfflineLsaPolicy); //this one is important, as it unloads hives.
 	if (!NT_SUCCESS(status))
 	{
-		_tprintf(_T("ERROR: LsaOfflineClose() returned %li.\r\n"), LsaNtStatusToWinError(status));
+		_tprintf(_T("ERROR: LsaOfflineClose() returned %lu.\r\n"), LsaNtStatusToWinError(status));
 		return (int)LsaNtStatusToWinError(status);
 	}
 	if (NULL != hOfflineLsaDLL)
 	{
-		FreeLibrary(hOfflineLsaDLL);
+		FreeLibrary(hOfflineLsaDLL); //best effort, ignore failures.
 	}
 	_tprintf(_T("Done.\r\n"));
 }
