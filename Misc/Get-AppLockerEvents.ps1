@@ -1,4 +1,10 @@
-$evts = Get-WinEvent -LogName "Microsoft-Windows-AppLocker/EXE and DLL"
+$evts = Get-WinEvent -LogName "Microsoft-Windows-AppLocker/EXE and DLL" -ErrorAction SilentlyContinue
+
+if ($evts -eq $null)
+{
+    Write-Host "No events in log." -ForegroundColor Red
+    break
+}
 
 $dll8002 = 0
 $dll8003 = 0
@@ -85,5 +91,29 @@ Write-Host "Oldest event:" (Get-Date ($oldesteventdatetime) -Format "o")
 Write-Host "Events age:" (New-TimeSpan -Start $oldesteventdatetime -End (Get-Date))
 Write-Host 
 Write-Host "(Potentially) blocked files:" 
-$blockedfiles | ft
+#$blockedfiles | ft
 
+foreach ($blockedfile in $blockedfiles)
+{
+    #lazy man approach to pseudo-environment variables. Good enough for my scenario, feel free to improve.
+    $blockedfile1 = $blockedfile.Replace("%OSDRIVE%","C:")
+    $blockedfile1 = $blockedfile.Replace("%SYSTEM32%","C:\Windows\System32")
+    $blockedfile1 = $blockedfile.Replace("%WINDIR%","C:\Windows")
+    
+    Write-Host "Filename: " $blockedfile " - " -NoNewline
+    if (Test-Path $blockedfile1)
+    {
+        if ((Get-AuthenticodeSignature -FilePath $blockedfile1).Status -eq "Valid")
+        {
+            Write-Host (Get-AuthenticodeSignature -FilePath $blockedfile1).SignerCertificate.Subject
+        }
+        else
+        {
+            Write-Host (Get-AuthenticodeSignature -FilePath $blockedfile1).Status
+        }
+    }
+    else
+    {
+        Write-Host "Not found"
+    }
+}
