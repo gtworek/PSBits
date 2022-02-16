@@ -97,8 +97,8 @@ foreach ($blockedfile in $blockedfiles)
 {
     #lazy man approach to pseudo-environment variables. Good enough for my scenario, feel free to improve.
     $blockedfile1 = $blockedfile.ToUpper().Replace("%OSDRIVE%","C:")
-    $blockedfile1 = $blockedfile.ToUpper().Replace("%SYSTEM32%","C:\Windows\System32")
-    $blockedfile1 = $blockedfile.ToUpper().Replace("%WINDIR%","C:\Windows")
+    $blockedfile1 = $blockedfile1.ToUpper().Replace("%SYSTEM32%","C:\Windows\System32")
+    $blockedfile1 = $blockedfile1.ToUpper().Replace("%WINDIR%","C:\Windows")
     
     Write-Host "Filename: " $blockedfile " - " -NoNewline
     if (Test-Path $blockedfile1)
