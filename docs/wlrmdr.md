@@ -37,8 +37,8 @@ Notifications from `wlrmdr.exe` may be managed through built-in settings app:
 
 General Settings:
 
-![Settings](https://github.com/gtworek/PSBits/blob/master/docs/pics/wl1.PNG)
+![Settings](https://github.com/gtworek/PSBits/raw/master/docs/pics/wl1.PNG)
 
 Windows Logon Reminders Settings:
 
-![Details](https://github.com/gtworek/PSBits/blob/master/docs/pics/wl2.PNG)
+![Details](https://github.com/gtworek/PSBits/raw/master/docs/pics/wl2.PNG)
