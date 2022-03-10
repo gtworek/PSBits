@@ -31,4 +31,6 @@ According to Microsoft, it’s NTFS kernel driver responsible for the invalidati
 When AppLocker needs to determine if there is a hash rule allowing to run the file, it checks only the cache. As the cache remained intact, the file will be allowed to run, despite the changed content, and of course its real hash.
 The whole scenario can be seen on a [short video](https://youtu.be/587PDVQACGg), demonstrating it on a VM and its virtual drive.
 
+[![YouTube](https://img.youtube.com/vi/587PDVQACGg/0.jpg)](https://www.youtube.com/watch?v=587PDVQACGg) 
+
 Even if the cache misuse can be see as a weakness, it does not open any new way of attacking the protected Windows OS. If a malicious actor can manipulate the file content without using NTFS driver, it may compromise Windows security in many other ways too.
