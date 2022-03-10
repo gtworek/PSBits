@@ -1,6 +1,6 @@
 ### AppLocker bypass by hash caching misuse
 
-If you need to know more about AppLocker - https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/applocker/applocker-overview
+If you need to know more about AppLocker - [https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/applocker/applocker-overview](https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/applocker/applocker-overview)
 
 As we know, AppLocker may use 3 different types of rules for whitelisting executable files: `Path`, `Publisher`, and `Hash`. The following whitepaper covers Hash rules. Such rules can be created through the wizard displayed in *secpol.msc -> Application Control Policies -> AppLocker -> Executable Rules -> Create New Rule...*
 
