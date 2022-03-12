@@ -212,16 +212,26 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 			((PFILE_FULL_EA_INFORMATION)pEaBuffer)->EaName[0] = '#';
 		}
 		_tprintf(_T("%hs\r\n"), pszEaName);
+		LocalFree(pszEaName);
 
-		NtSetEaFile(
+		Status = NtSetEaFile(
 			hDestinationHandle,
 			&iosbWrite,
 			pEaBuffer,
 			ulEaBufferSize
 		);
-		LocalFree(pszEaName);
+
+		if (!NT_SUCCESS(Status))
+		{
+			_tprintf(_T("ERROR: NtSetEaFile() returned %lu\r\n"), RtlNtStatusToDosError(Status));
+			LocalFree(pEaBuffer);
+			CloseHandle(hSourceHandle);
+			CloseHandle(hDestinationHandle);
+			return (int)RtlNtStatusToDosError(Status);
+		}
 	}
 
+	_tprintf(_T("Done.\r\n"));
 	LocalFree(pEaBuffer);
 	CloseHandle(hSourceHandle);
 	CloseHandle(hDestinationHandle);
