@@ -26,9 +26,9 @@ The very simple code could look like this:
 Even as the file is modified, the `oldDateTime` stores the original (before write happened) set of dates and times, and the same set is re-applied just after the write operation, leaving the file with dates/times looking just like before the operation.
 When we look at the journal, we can observe the following set of entries:
 
-1. 0x00000002: Data extend
-1. 0x00008002: Data extend | Basic info change
-1. 0x80008002: Data extend | Basic info change | Close
+1. `0x00000002: Data extend`
+1. `0x00008002: Data extend | Basic info change`
+1. `0x80008002: Data extend | Basic info change | Close`
 
 It means the file metadata was modified, which is relatively easy to spot.
 And what if we do something looking stupid at the first sight: read the original datetime, write it (unchanged!) and then modify the file content? Like in the code below:
@@ -41,8 +41,8 @@ And what if we do something looking stupid at the first sight: read the original
 
 It looks pointless, as the write operation should change the `LastWriteTime` and no one fixes it later, but it works! If you set the date/time BEFORE the content change, specifying the original one, (or -1), the subsequent file content changes using the same handle will NOT update the datetime and of course will not leave any trace of updating it in the journal. Journal will contain only:
 
-1. 0x00000002: Data extend
-1. 0x80000002: Data extend | Close
+1. `0x00000002: Data extend`
+1. `0x80000002: Data extend | Close`
 
 I have never seen it documented, but it works. I can also observe some places where it is used by the Windows itself, which may mean the described behavior is 100% intentional.
 
