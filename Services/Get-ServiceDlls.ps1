@@ -2,21 +2,31 @@ $keys = Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\"
 
 foreach ($key in $keys)
 {
-    if (Test-Path ($key.pspath+"\Parameters"))
+    $ImagePath = (Get-ItemProperty ($key.pspath)).ImagePath
+    if ($null -ne $ImagePath)
     {
-        $ServiceDll = (Get-ItemProperty ($key.pspath+"\Parameters")).ServiceDll
-        if ($ServiceDll -ne $null)
-        {
-            Write-Host ($key.PsChildName+"`t"+$ServiceDll+"`t") -NoNewline
-            if ((Get-AuthenticodeSignature $ServiceDll).Status.value__ -eq 0) 
+        if ($ImagePath.Contains("\svchost.exe"))
+        {    
+            if (Test-Path ($key.pspath+"\Parameters"))
             {
-                Write-Host -ForegroundColor Green "Signed"
+                $ServiceDll = (Get-ItemProperty ($key.pspath+"\Parameters")).ServiceDll
             }
             else
             {
-                Write-Host -ForegroundColor red "Unsigned"
+                $ServiceDll = (Get-ItemProperty ($key.pspath)).ServiceDll
+            }
+            if ($null -ne $ServiceDll)
+            {
+                Write-Host ($key.PsChildName+"`t"+$ServiceDll+"`t") -NoNewline
+                if ((Get-AuthenticodeSignature $ServiceDll).IsOSBinary) 
+                {
+                    Write-Host -ForegroundColor Green "OS Binary"
+                }
+                else
+                {
+                    Write-Host -ForegroundColor red "External Binary"
+                }
             }
         }
     }
-
 }
