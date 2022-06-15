@@ -1,12 +1,13 @@
 #include <Windows.h>
 #include <strsafe.h>
+#include <tchar.h>
 
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ntdll.lib")
 
 #define ISO_TIME_LEN 22
-#define ISO_TIME_FORMAT_W L"%04i-%02i-%02iT%02i:%02i:%02iZ"
-#define STOP_IF_NOT_ALLOCATED(x) if (NULL == (x)) {wprintf(L"FATAL ERROR. Cannot allocate memory in %hs\r\n",__func__); _exit(ERROR_NOT_ENOUGH_MEMORY);}
+#define ISO_TIME_FORMAT _T("%04i-%02i-%02iT%02i:%02i:%02iZ")
+#define STOP_IF_NOT_ALLOCATED(x) if (NULL == (x)) {_tprintf(_T("FATAL ERROR. Cannot allocate memory in %hs\r\n"),__func__); _exit(ERROR_NOT_ENOUGH_MEMORY);}
 #define PARTLENGTH 1024
 
 #define ANY_SIZE 1
@@ -15,20 +16,20 @@
 
 #define ntohs(a) ((((a) & 0xFF00) >> 8) | (((a) & 0x00FF) << 8))
 
-PWSTR pwszStates[13] = {
-	L"??",
-	L"CLOSED",
-	L"LISTENING",
-	L"SYN-SENT",
-	L"SYN-RECEIVED",
-	L"ESTABLISHED",
-	L"FIN-WAIT-1",
-	L"FIN-WAIT-2",
-	L"CLOSE-WAIT",
-	L"CLOSING",
-	L"LAST-ACK",
-	L"LAST-ACK",
-	L"DELETE-TCB"
+PTSTR pwszStates[13] = {
+	_T("??"),
+	_T("CLOSED"),
+	_T("LISTENING"),
+	_T("SYN-SENT"),
+	_T("SYN-RECEIVED"),
+	_T("ESTABLISHED"),
+	_T("FIN-WAIT-1"),
+	_T("FIN-WAIT-2"),
+	_T("CLOSE-WAIT"),
+	_T("CLOSING"),
+	_T("LAST-ACK"),
+	_T("LAST-ACK"),
+	_T("DELETE-TCB")
 };
 
 DWORD dwTabs[4] = {28, 51, 65, 73}; //NOLINT
@@ -91,6 +92,59 @@ typedef struct _MIB_TCP6TABLE_OWNER_MODULE
 	MIB_TCP6ROW_OWNER_MODULE table[ANY_SIZE];
 } MIB_TCP6TABLE_OWNER_MODULE, *PMIB_TCP6TABLE_OWNER_MODULE;
 
+typedef struct _MIB_UDPROW_OWNER_MODULE
+{
+	DWORD dwLocalAddr;
+	DWORD dwLocalPort;
+	DWORD dwOwningPid;
+	LARGE_INTEGER liCreateTimestamp;
+
+	union
+	{
+		struct
+		{
+			int SpecificPortBind : 1;
+		};
+
+		int dwFlags;
+	};
+
+	ULONGLONG OwningModuleInfo[TCPIP_OWNING_MODULE_SIZE];
+} MIB_UDPROW_OWNER_MODULE, *PMIB_UDPROW_OWNER_MODULE;
+
+typedef struct _MIB_UDPTABLE_OWNER_MODULE
+{
+	DWORD dwNumEntries;
+	MIB_UDPROW_OWNER_MODULE table[ANY_SIZE];
+} MIB_UDPTABLE_OWNER_MODULE, *PMIB_UDPTABLE_OWNER_MODULE;
+
+typedef struct _MIB_UDP6ROW_OWNER_MODULE
+{
+	UCHAR ucLocalAddr[16];
+	DWORD dwLocalScopeId;
+	DWORD dwLocalPort;
+	DWORD dwOwningPid;
+	LARGE_INTEGER liCreateTimestamp;
+
+	union
+	{
+		struct
+		{
+			int SpecificPortBind : 1;
+		};
+
+		int dwFlags;
+	};
+
+	ULONGLONG OwningModuleInfo[TCPIP_OWNING_MODULE_SIZE];
+} MIB_UDP6ROW_OWNER_MODULE, *PMIB_UDP6ROW_OWNER_MODULE;
+
+typedef struct _MIB_UDP6TABLE_OWNER_MODULE
+{
+	DWORD dwNumEntries;
+	MIB_UDP6ROW_OWNER_MODULE table[ANY_SIZE];
+} MIB_UDP6TABLE_OWNER_MODULE, *PMIB_UDP6TABLE_OWNER_MODULE;
+
 typedef struct in6_addr
 {
 	union
@@ -125,9 +179,25 @@ GetExtendedUdpTable(
 NTSYSAPI
 PWSTR
 NTAPI
+RtlIpv4AddressToStringA(
+	const struct in_addr* Addr,
+	PSTR S
+);
+
+NTSYSAPI
+PWSTR
+NTAPI
 RtlIpv4AddressToStringW(
 	const struct in_addr* Addr,
 	PWSTR S
+);
+
+NTSYSAPI
+PWSTR
+NTAPI
+RtlIpv6AddressToStringA(
+	const struct in6_addr* Addr,
+	PSTR S
 );
 
 NTSYSAPI
@@ -138,24 +208,32 @@ RtlIpv6AddressToStringW(
 	PWSTR S
 );
 
-PWSTR FileTimeToISO8601(PVOID ftTime)
+#ifdef UNICODE
+#define RtlIpv4AddressToString RtlIpv4AddressToStringW
+#define RtlIpv6AddressToString RtlIpv6AddressToStringW
+#else
+#define RtlIpv4AddressToString RtlIpv4AddressToStringA
+#define RtlIpv6AddressToString RtlIpv6AddressToStringA
+#endif // UNICODE
+
+PTSTR FileTimeToISO8601(PVOID ftTime)
 {
-	PWSTR pwszISOTimeZ;
+	PTSTR pszISOTimeZ;
 	SYSTEMTIME stTime;
 	FileTimeToSystemTime((FILETIME*)ftTime, &stTime); //no error checking
-	pwszISOTimeZ = LocalAlloc(LPTR, (ISO_TIME_LEN + 3) * sizeof(WCHAR));
-	STOP_IF_NOT_ALLOCATED(pwszISOTimeZ)
-	StringCchPrintfW(
-		pwszISOTimeZ,
+	pszISOTimeZ = LocalAlloc(LPTR, (ISO_TIME_LEN + 3) * sizeof(TCHAR));
+	STOP_IF_NOT_ALLOCATED(pszISOTimeZ)
+	StringCchPrintf(
+		pszISOTimeZ,
 		ISO_TIME_LEN + 3,
-		ISO_TIME_FORMAT_W,
+		ISO_TIME_FORMAT,
 		stTime.wYear,
 		stTime.wMonth,
 		stTime.wDay,
 		stTime.wHour,
 		stTime.wMinute,
 		stTime.wSecond);
-	return pwszISOTimeZ;
+	return pszISOTimeZ;
 }
 
 VOID DisplayTcpv4Table(void)
@@ -183,82 +261,83 @@ VOID DisplayTcpv4Table(void)
 	if (NO_ERROR != dwStatus)
 	{
 		LocalFree(ptomTable);
-		wprintf(L"\r\n\r\nERROR: GetExtendedTcpTable(AF_INET) returned %i\r\n", dwStatus);
+		_tprintf(_T("\r\n\r\nERROR: GetExtendedTcpTable(AF_INET) returned %i\r\n"), dwStatus);
 		_exit((int)dwStatus);
 	}
 
 	for (DWORD i = 0; i < ptomTable->dwNumEntries; i++)
 	{
-		PWSTR pwszTimestamp = L"Unknown";
-		WCHAR wszLine[PARTLENGTH] = {0};
-		WCHAR wszPart[PARTLENGTH] = {0};
-		DWORD dwCurrentStrLen;
+		PTSTR pszTimestamp = _T("Unknown");
+		TCHAR szLine[PARTLENGTH] = {0};
+		TCHAR szPart[PARTLENGTH] = {0};
+		DWORD dwCurrentStrChLen;
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"TCP  ");
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("TCP  "));
 
-		RtlIpv4AddressToStringW((PIN_ADDR)&ptomTable->table[i].dwLocalAddr, wszPart);
+		RtlIpv4AddressToString((PIN_ADDR)&ptomTable->table[i].dwLocalAddr, szPart);
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L":%i ", ntohs((u_short)ptomTable->table[i].dwLocalPort));
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwLocalPort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrChLen = (DWORD)_tcslen(szLine);
 
-		if (dwCurrentStrLen < dwTabs[0])
+		if (dwCurrentStrChLen < dwTabs[0])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[0] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[0] - dwCurrentStrChLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
-		RtlIpv4AddressToStringW((PIN_ADDR)&ptomTable->table[i].dwRemoteAddr, wszPart);
+		RtlIpv4AddressToString((PIN_ADDR)&ptomTable->table[i].dwRemoteAddr, szPart);
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L":%i ", ntohs((u_short)ptomTable->table[i].dwRemotePort));
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwRemotePort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrChLen = (DWORD)_tcslen(szLine);
 
-		if (dwCurrentStrLen < dwTabs[1])
+		if (dwCurrentStrChLen < dwTabs[1])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[1] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[1] - dwCurrentStrChLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%s ", pwszStates[ptomTable->table[i].dwState]);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s "), pwszStates[ptomTable->table[i].dwState]);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrChLen = (DWORD)_tcslen(szLine);
 
-		if (dwCurrentStrLen < dwTabs[2])
+		if (dwCurrentStrChLen < dwTabs[2])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[2] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[2] - dwCurrentStrChLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%i ", ptomTable->table[i].dwOwningPid);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%i "), ptomTable->table[i].dwOwningPid);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrChLen = (DWORD)_tcslen(szLine);
 
-		if (dwCurrentStrLen < dwTabs[3])
+		if (dwCurrentStrChLen < dwTabs[3])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[3] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[3] - dwCurrentStrChLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
 
 		if (0 != ptomTable->table[i].liCreateTimestamp.QuadPart)
 		{
-			pwszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
+			pszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
 		}
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%s", pwszTimestamp);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s"), pszTimestamp);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
 
-		wprintf(L"%s\r\n", wszLine);
+		_tprintf(_T("%s\r\n"), szLine);
 	}
+	LocalFree(ptomTable);
 }
 
 VOID DisplayTcpv6Table(void)
@@ -286,94 +365,292 @@ VOID DisplayTcpv6Table(void)
 	if (NO_ERROR != dwStatus)
 	{
 		LocalFree(ptomTable);
-		wprintf(L"\r\n\r\nERROR: GetExtendedTcpTable(AF_INET6) returned %i\r\n", dwStatus);
+		_tprintf(_T("\r\n\r\nERROR: GetExtendedTcpTable(AF_INET6) returned %i\r\n"), dwStatus);
 		_exit((int)dwStatus);
 	}
 	for (DWORD i = 0; i < ptomTable->dwNumEntries; i++)
 	{
-		PWSTR pwszTimestamp = L"Unknown";
-		WCHAR wszLine[PARTLENGTH] = {0};
-		WCHAR wszPart[PARTLENGTH] = {0};
+		PWSTR pszTimestamp = _T("Unknown");
+		TCHAR szLine[PARTLENGTH] = {0};
+		TCHAR szPart[PARTLENGTH] = {0};
 		DWORD dwCurrentStrLen;
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"TCP  ");
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("TCP  "));
 
-		RtlIpv6AddressToStringW((PIN6_ADDR)&ptomTable->table[i].ucLocalAddr, wszPart);
+		RtlIpv6AddressToString((PIN6_ADDR)&ptomTable->table[i].ucLocalAddr, szPart);
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"[");
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"]");
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L":%i ", ntohs((u_short)ptomTable->table[i].dwLocalPort));
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("["));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("]"));
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwLocalPort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
 
 		if (dwCurrentStrLen < dwTabs[0])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[0] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[0] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
-		RtlIpv6AddressToStringW((PIN6_ADDR)&ptomTable->table[i].ucRemoteAddr, wszPart);
+		RtlIpv6AddressToString((PIN6_ADDR)&ptomTable->table[i].ucRemoteAddr, szPart);
 
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"[");
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), L"]");
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L":%i ", ntohs((u_short)ptomTable->table[i].dwRemotePort));
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("["));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("]"));
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwRemotePort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
 
 		if (dwCurrentStrLen < dwTabs[1])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[1] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[1] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%s ", pwszStates[ptomTable->table[i].dwState]);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s "), pwszStates[ptomTable->table[i].dwState]);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
 
 		if (dwCurrentStrLen < dwTabs[2])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[2] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[2] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%i ", ptomTable->table[i].dwOwningPid);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%i "), ptomTable->table[i].dwOwningPid);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
-		dwCurrentStrLen = (DWORD)wcslen(wszLine);
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
 
 		if (dwCurrentStrLen < dwTabs[3])
 		{
-			StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%*s", dwTabs[3] - dwCurrentStrLen, L" ");
-			StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[3] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 		}
 
 
 		if (0 != ptomTable->table[i].liCreateTimestamp.QuadPart)
 		{
-			pwszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
+			pszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
 		}
 
-		StringCchPrintfW(wszPart, ARRAYSIZE(wszPart), L"%s", pwszTimestamp);
-		StringCchCatW(wszLine, ARRAYSIZE(wszLine), wszPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s"), pszTimestamp);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
 
 
-		wprintf(L"%s\r\n", wszLine);
+		_tprintf(_T("%s\r\n"), szLine);
 	}
+	LocalFree(ptomTable);
+}
+
+VOID DisplayUdpv4Table(void)
+{
+	DWORD dwStatus;
+	DWORD dwTableSize;
+	PMIB_UDPTABLE_OWNER_MODULE ptomTable;
+
+	// loop asking for size
+	dwTableSize = 0;
+	ptomTable = NULL;
+	dwStatus = ERROR_INSUFFICIENT_BUFFER;
+	while (ERROR_INSUFFICIENT_BUFFER == dwStatus)
+	{
+		if (ptomTable)
+		{
+			LocalFree(ptomTable);
+		}
+		ptomTable = (PMIB_UDPTABLE_OWNER_MODULE)LocalAlloc(LPTR, dwTableSize);
+		STOP_IF_NOT_ALLOCATED(ptomTable)
+
+		dwStatus = GetExtendedUdpTable(ptomTable, &dwTableSize, TRUE, AF_INET, UDP_TABLE_OWNER_MODULE, 0);
+	}
+
+	if (NO_ERROR != dwStatus)
+	{
+		LocalFree(ptomTable);
+		_tprintf(_T("\r\n\r\nERROR: GetExtendedUdpTable(AF_INET) returned %i\r\n"), dwStatus);
+		_exit((int)dwStatus);
+	}
+
+	for (DWORD i = 0; i < ptomTable->dwNumEntries; i++)
+	{
+		PWSTR pszTimestamp = _T("Unknown");
+		TCHAR szLine[PARTLENGTH] = {0};
+		TCHAR szPart[PARTLENGTH] = {0};
+		DWORD dwCurrentStrLen;
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("UDP  "));
+
+		RtlIpv4AddressToString((PIN_ADDR)&ptomTable->table[i].dwLocalAddr, szPart);
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwLocalPort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[0])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[0] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("*.* "));
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[1])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[1] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[2])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[2] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%i "), ptomTable->table[i].dwOwningPid);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[3])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[3] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+
+		if (0 != ptomTable->table[i].liCreateTimestamp.QuadPart)
+		{
+			pszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
+		}
+
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s"), pszTimestamp);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+		_tprintf(_T("%s\r\n"), szLine);
+	}
+	LocalFree(ptomTable);
 }
 
 
-int wmain(int argc, WCHAR** argv, WCHAR** envp)
+VOID DisplayUdpv6Table(void)
+{
+	DWORD dwStatus;
+	DWORD dwTableSize;
+	PMIB_UDP6TABLE_OWNER_MODULE ptomTable;
+
+	// loop asking for size
+	dwTableSize = 0;
+	ptomTable = NULL;
+	dwStatus = ERROR_INSUFFICIENT_BUFFER;
+	while (ERROR_INSUFFICIENT_BUFFER == dwStatus)
+	{
+		if (ptomTable)
+		{
+			LocalFree(ptomTable);
+		}
+		ptomTable = (PMIB_UDP6TABLE_OWNER_MODULE)LocalAlloc(LPTR, dwTableSize);
+		STOP_IF_NOT_ALLOCATED(ptomTable)
+
+		dwStatus = GetExtendedUdpTable(ptomTable, &dwTableSize, TRUE, AF_INET6, UDP_TABLE_OWNER_MODULE, 0);
+	}
+
+	if (NO_ERROR != dwStatus)
+	{
+		LocalFree(ptomTable);
+		_tprintf(_T("\r\n\r\nERROR: GetExtendedUdpTable(AF_INET6) returned %i\r\n"), dwStatus);
+		_exit((int)dwStatus);
+	}
+
+	for (DWORD i = 0; i < ptomTable->dwNumEntries; i++)
+	{
+		PWSTR pszTimestamp = _T("Unknown");
+		TCHAR szLine[PARTLENGTH] = {0};
+		TCHAR szPart[PARTLENGTH] = {0};
+		DWORD dwCurrentStrLen;
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("UDP  "));
+
+		RtlIpv6AddressToString((PIN6_ADDR)&ptomTable->table[i].ucLocalAddr, szPart);
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("["));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("]"));
+
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T(":%i "), ntohs((u_short)ptomTable->table[i].dwLocalPort));
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[0])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[0] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		StringCchCat(szLine, ARRAYSIZE(szLine), _T("*.* "));
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[1])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[1] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[2])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[2] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%i "), ptomTable->table[i].dwOwningPid);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+		dwCurrentStrLen = (DWORD)_tcslen(szLine);
+
+		if (dwCurrentStrLen < dwTabs[3])
+		{
+			StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%*s"), dwTabs[3] - dwCurrentStrLen, _T(" "));
+			StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+		}
+
+
+		if (0 != ptomTable->table[i].liCreateTimestamp.QuadPart)
+		{
+			pszTimestamp = FileTimeToISO8601(&ptomTable->table[i].liCreateTimestamp.QuadPart);
+		}
+
+		StringCchPrintf(szPart, ARRAYSIZE(szPart), _T("%s"), pszTimestamp);
+		StringCchCat(szLine, ARRAYSIZE(szLine), szPart);
+
+
+		_tprintf(_T("%s\r\n"), szLine);
+	}
+	LocalFree(ptomTable);
+}
+
+
+int wmain(int argc, TCHAR** argv, TCHAR** envp)
 {
 	UNREFERENCED_PARAMETER(argc);
 	UNREFERENCED_PARAMETER(argv);
 	UNREFERENCED_PARAMETER(envp);
-	wprintf(L"Prot Local Address          Foreign Address        State         PID     Time Stamp\r\n");
+	_tprintf(_T("\r\nProt Local Address          Foreign Address        State         PID     Time Stamp\r\n\r\n"));
 	DisplayTcpv4Table();
 	DisplayTcpv6Table();
+	DisplayUdpv4Table();
+	DisplayUdpv6Table();
 }
