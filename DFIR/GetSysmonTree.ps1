@@ -1,6 +1,5 @@
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
-[void][System.Reflection.Assembly]::LoadWithPartialName("Microsoft.Isam.Esent.Interop")
 # create Form for displaying the folder tree
 $Form = New-Object System.Windows.Forms.Form
 $Form.Text = "Sysmon Process Tree"
