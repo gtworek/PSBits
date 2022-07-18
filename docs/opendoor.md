@@ -6,7 +6,7 @@ The OpenDoor challenge provides an end-user account and the malicious kernel dri
 
 Even if possibilities are endless, the attack should be quick and relatively easy due to the nature of CTF. The chosen path relied on token manipulation and overwriting `_SEP_TOKEN_PRIVILEGES` structure, effectively giving the process all possible privileges, including `SeCreateTokenPrivilege`, which in turns allows to create a new token, and run child process with such token.  
 
-Alternatively, process could obtain other sensitive privileges such as `SeDebugPrivilege` and use it to elevate. Theoretically, any process can be manipulated this way, as any memory address can be written with the driver, but in practice, the code manipulated its own token, and then launched `net localgroup command`, adding current user to administrators.  
+Alternatively, process could obtain other sensitive privileges such as `SeDebugPrivilege` and use it to elevate. Theoretically, any process can be manipulated this way, as any memory address can be written with the driver, but in practice, the code manipulated its own token, and then launched `net localgroup` command, adding current user to administrators.  
 
 After a reboot, the machine was pwned (as regular user was added to admins), and the flag was read.  
 
