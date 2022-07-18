@@ -351,7 +351,7 @@ HANDLE CreateUserToken(HANDLE hToken)
 	SID_BUILTIN TkSidLocalAdminGroup = {1, 2, {0, 0, 0, 0, 0, 5}, {32, DOMAIN_ALIAS_RID_ADMINS}};
 	SECURITY_QUALITY_OF_SERVICE sqos = {sizeof(sqos), SecurityImpersonation, SECURITY_STATIC_TRACKING, FALSE};
 	OBJECT_ATTRIBUTES oa = {sizeof(oa), 0, 0, 0, 0, &sqos};
-	TOKEN_SOURCE SourceToken = {{'!', '!', '!', '!', '!', '!', '!', '!'}, {0, 0}};
+	TOKEN_SOURCE SourceToken = { {'!', '!', '!', '!', '!', '!', '!', '!'}, {0, 0} };
 	SID_IDENTIFIER_AUTHORITY nt = SECURITY_NT_AUTHORITY;
 	PSID lpSidOwner = NULL;
 	SID_INTEGRITY IntegritySIDSystem = {1, 1, SECURITY_MANDATORY_LABEL_AUTHORITY, SECURITY_MANDATORY_SYSTEM_RID};
