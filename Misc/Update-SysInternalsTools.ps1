@@ -44,7 +44,7 @@ $oldHashStr = Get-Content($targetDirName + $lastHashFileName) -ErrorAction Ignor
 #calculate MD5 hash from the web content
 $stringAsStream = [System.IO.MemoryStream]::new()
 $writer = [System.IO.StreamWriter]::new($stringAsStream)
-$writer.write($response)
+$writer.write($response.Content)
 $writer.Flush()
 $stringAsStream.Position = 0
 $hashStr = (Get-FileHash -InputStream $stringAsStream -Algorithm MD5).Hash
