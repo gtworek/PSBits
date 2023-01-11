@@ -1,3 +1,6 @@
+# Take a look at the newer version, seriously improved by @klist_sessions
+# You can find it here: https://github.com/gtworek/PSBits/blob/master/Sysmon/Get-SysmonEvents.ps1
+
 $maxEvents = [long]::MaxValue #limit for the last X events from the log if you like
 $destinationFolder = [Environment]::GetFolderPath("Desktop")
 $destinationFile = (Get-Date -Format yyyyMMddTHHmmss)
