@@ -1,8 +1,9 @@
 # PoC only. Filenames are hardcoded.
 
 $msPerBit = 500 # must be divisible by 10 
-
 $srcData = Get-Content -Path C:\temp\test1.txt -Encoding Byte
+
+$startStopBits = $true
 
 [byte[]]$wavHeader = @()
 
@@ -28,6 +29,11 @@ $wavHeader += (0x00, 0x00, 0x00, 0x00) # size2. Number of samples Offset 0x28
 #size2
 $samplesCount = 44.100 * $srcData.Count * $msPerBit * 8
 
+if ($startStopBits)
+{
+    $samplesCount += (44.100 * 2 * $msPerBit)
+}
+
 $wavHeader[0x28] = $samplesCount -band 0xFF
 $wavHeader[0x29] = ($samplesCount -band 0xFF00) -shr 8
 $wavHeader[0x2A] = ($samplesCount -band 0xFF0000) -shr 16
@@ -41,17 +47,31 @@ $wavHeader[0x07] = (($samplesCount + 36) -band 0xFF000000) -shr 24
 
 
 $filename = 'C:\temp\test1.wav'
-del $filename
+del $filename # for PoC
 $fsw = new-object IO.FileStream($filename, [IO.FileMode]::CreateNew)
 $writer = new-object IO.BinaryWriter($fsw)
 $writer.Write($wavHeader)
 
 
-$loFreq = 10
-$hiFreq = 3333
+$loFreq = 300
+$hiFreq = 2000
 
 $samplesPerBit = 44.1 * $msPerBit
 $body = New-Object byte[] $samplesPerBit
+
+# a bit of data for a start. 
+if ($startStopBits)
+{
+    for ($k=0; $k -lt ($samplesPerBit); $k++)
+    {
+        $body[$k] = 0
+        if ((($k+1) % 4410) -eq 0)
+        {
+            $body[$k] = 255
+        }
+    }
+    $writer.Write($body)
+}
 
 for ($i = 0; $i -lt $srcData.Count; $i++)
 {
@@ -73,6 +93,21 @@ for ($i = 0; $i -lt $srcData.Count; $i++)
         $writer.Write($body)
     }
 }
+
+# a bit of data for a stop. 
+if ($startStopBits)
+{
+    for ($k=0; $k -lt ($samplesPerBit); $k++)
+    {
+        $body[$k] = 0
+        if ((($k+1) % 4410) -eq 0)
+        {
+            $body[$k] = 255
+        }
+    }
+    $writer.Write($body)
+}
+
 
 $fsw.Close()
 
