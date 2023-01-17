@@ -1,4 +1,4 @@
-# Goertzel instead of FFT. It makest the script up to 1000 times faster.
+# Goertzel instead of FFT. It makes the script up to 1000 times faster.
 
 $msPerBit = 500
 $loFreq = 300
