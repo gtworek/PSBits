@@ -20,9 +20,12 @@ In such cases, only attacked machines are reinstalled. I would add DCs to the sc
 - Schema Admins.
 7. Logon using the freshly created account.
 8. Remove or disable all existing privileged accounts.
-9. Analyze the structure and permissions within AD database – you can use [BloodHound](https://bloodhound.readthedocs.io/) and/or [Adalanche](https://github.com/lkarlslund/Adalanche) for this purpose.
-10. Reset `krbtgt` password ***TWICE*** to disarm all potential "Golden Tickets" created so far. You can use the script from https://github.com/microsoft/New-KrbtgtKeys.ps1 
-11. Analyze (risky!) or re-create **all** your GPOs. The following steps will wipe all existing GPOs. 
+9. Analyze the structure and permissions within AD database. Useful tools can include:
+- [BloodHound](https://bloodhound.readthedocs.io/),
+- [Adalanche](https://github.com/lkarlslund/Adalanche),
+- [FarsightAD](https://github.com/Qazeer/FarsightAD).
+11. Reset `krbtgt` password ***TWICE*** to disarm all potential "Golden Tickets" created so far. You can use the script from https://github.com/microsoft/New-KrbtgtKeys.ps1 
+12. Analyze (risky!) or re-create **all** your GPOs. The following steps will wipe all existing GPOs. 
 Re-creating them may require a lot of effort, but GPOs are actively used to maintain the persistency for threat actors. Judge your approach wisely.
 If you are not sure you can analyze GPOs, it's better to recreate everything from scratch:
 - Make sure you have all your GPOs documented.
