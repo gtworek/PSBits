@@ -24,6 +24,7 @@ In such cases, only attacked machines are reinstalled. I would add DCs to the sc
 - [BloodHound](https://bloodhound.readthedocs.io/),
 - [Adalanche](https://github.com/lkarlslund/Adalanche),
 - [FarsightAD](https://github.com/Qazeer/FarsightAD).
+- [PingCastle](https://www.pingcastle.com/)
 10. Reset the computer account password of this DC twice.
 11. Reset `krbtgt` password ***TWICE*** to disarm all potential "Golden Tickets" created so far. You can use the script from https://github.com/microsoft/New-KrbtgtKeys.ps1 
 12. Analyze (risky!) or re-create **all** your GPOs. The following steps will wipe all existing GPOs. 
