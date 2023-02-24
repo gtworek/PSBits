@@ -1,4 +1,4 @@
-$SrcFilename = "C:\Windows\System32\AppLocker\Appx.AppLocker"
+$SrcFilename = "C:\Windows\System32\AppLocker\Exe.AppLocker"
 
 $bytes = Get-Content $SrcFilename -Encoding Byte -ReadCount 0
 
