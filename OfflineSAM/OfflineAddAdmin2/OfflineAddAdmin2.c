@@ -7,14 +7,19 @@
 #define STATUSCHECK if (!NT_SUCCESS(Status)) \
 					{ \
 						_tprintf(_T("error 0x%x\r\n"), Status); \
+						if (NULL != hPolicy){LsaOfflineClose(hPolicy);} \
+						if (NULL != hServer){SamOfflineCloseHandle(hServer);} \
+						if (NULL != hBuiltInDomain){SamOfflineCloseHandle(hBuiltInDomain);} \
+						if (NULL != hAccountDomain){SamOfflineCloseHandle(hAccountDomain);} \
+						if (NULL != hUser){SamOfflineCloseHandle(hUser);} \
+						if (NULL != hAdministratorsAlias){SamOfflineCloseHandle(hAdministratorsAlias);} \
 						return (int)Status; \
 					} \
-					_tprintf(_T("OK.\r\n")) \
+					_tprintf(_T("OK.\r\n"))
 
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 typedef PVOID OFFLINELSA_HANDLE, *POFFLINELSA_HANDLE;
 typedef PVOID OFFLINESAM_HANDLE, *POFFLINESAM_HANDLE;
-typedef PVOID SAM_HANDLE, *PSAM_HANDLE;
 
 HMODULE hOfflineLsaDLL;
 HMODULE hOfflineSamDLL;
@@ -33,7 +38,7 @@ typedef struct _USER_CONTROL_INFORMATION
 } USER_CONTROL_INFORMATION, *PUSER_CONTROL_INFORMATION;
 
 //https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/b10cfda1-f24f-441b-8f43-80cb93e786ec
-#define USER_ACCOUNT_DISABLED 0x00000001
+#define USER_ACCOUNT_DISABLED 0x00000001u
 
 //https://github.com/processhacker/phnt/blob/master/ntsam.h
 typedef struct _USER_SET_PASSWORD_INFORMATION
@@ -50,7 +55,7 @@ RtlInitUnicodeString(
 	PCWSTR SourceString
 );
 
-
+#pragma region Dynamic loads
 typedef NTSTATUS (NTAPI* LSAOFFLINEOPENPOLICY)(LPWSTR, POFFLINELSA_HANDLE);
 
 NTSTATUS
@@ -172,14 +177,14 @@ SamOfflineOpenDomain(
 }
 
 
-typedef NTSTATUS (NTAPI* SAMOFFLINECREATEUSERINDOMAIN)(OFFLINESAM_HANDLE, PUNICODE_STRING, PSAM_HANDLE, PULONG);
+typedef NTSTATUS (NTAPI* SAMOFFLINECREATEUSERINDOMAIN)(OFFLINESAM_HANDLE, PUNICODE_STRING, OFFLINESAM_HANDLE, PULONG);
 
 NTSTATUS
 NTAPI
 SamOfflineCreateUserInDomain(
 	OFFLINESAM_HANDLE DomainHandle,
 	PUNICODE_STRING AccountName,
-	PSAM_HANDLE UserHandle,
+	OFFLINESAM_HANDLE UserHandle,
 	PULONG RelativeId
 )
 {
@@ -324,6 +329,31 @@ SamOfflineAddMemberToAlias(
 }
 
 
+typedef NTSTATUS (NTAPI* SAMOFFLINECLOSEHANDLE)(OFFLINESAM_HANDLE);
+
+NTSTATUS
+NTAPI
+SamOfflineCloseHandle(
+	OFFLINESAM_HANDLE SamHandle
+)
+{
+	static SAMOFFLINECLOSEHANDLE pfnSamOfflineCloseHandle = NULL;
+	if (NULL == pfnSamOfflineCloseHandle)
+	{
+		pfnSamOfflineCloseHandle = (SAMOFFLINECLOSEHANDLE)(LPVOID)GetProcAddress(
+			hOfflineSamDLL,
+			"SamOfflineCloseHandle");
+	}
+	if (NULL == pfnSamOfflineCloseHandle)
+	{
+		_tprintf(_T("SamOfflineCloseHandle could not be found.\r\n"));
+		_exit(ERROR_PROC_NOT_FOUND);
+	}
+	return pfnSamOfflineCloseHandle(SamHandle);
+}
+#pragma endregion
+
+
 int LoadOfflineDlls(_TCHAR** argv)
 {
 	int iCharsWritten;
@@ -378,7 +408,7 @@ int CreateOfflineUser(PWSTR wszWorkingDir, PWSTR wszUserName, PWSTR wszPassword)
 {
 	NTSTATUS Status;
 	BYTE bSidBuffer[SECURITY_MAX_SID_SIZE] = {0};
-	PSID pSidBuiltInDomainSid = NULL;
+	PSID pSidBuiltInDomainSid;
 	DWORD dwSidLength;
 	BOOL bRes;
 	OFFLINELSA_HANDLE hPolicy = NULL;
@@ -401,6 +431,7 @@ int CreateOfflineUser(PWSTR wszWorkingDir, PWSTR wszUserName, PWSTR wszPassword)
 	{
 		return (int)GetLastError();
 	}
+
 
 	_tprintf(_T("LsaOfflineOpenPolicy... "));
 	Status = LsaOfflineOpenPolicy(wszWorkingDir, &hPolicy);
@@ -458,6 +489,27 @@ int CreateOfflineUser(PWSTR wszWorkingDir, PWSTR wszUserName, PWSTR wszPassword)
 	_tprintf(_T("SamOfflineAddMemberToAlias... "));
 	Status = SamOfflineAddMemberToAlias(hAdministratorsAlias, psidUserSid);
 	STATUSCHECK;
+
+	if (NULL != hServer)
+	{
+		SamOfflineCloseHandle(hServer);
+	}
+	if (NULL != hBuiltInDomain)
+	{
+		SamOfflineCloseHandle(hBuiltInDomain);
+	}
+	if (NULL != hAccountDomain)
+	{
+		SamOfflineCloseHandle(hAccountDomain);
+	}
+	if (NULL != hUser)
+	{
+		SamOfflineCloseHandle(hUser);
+	}
+	if (NULL != hAdministratorsAlias)
+	{
+		SamOfflineCloseHandle(hAdministratorsAlias);
+	}
 
 	return 0;
 }
