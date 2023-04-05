@@ -1,22 +1,43 @@
 ```mermaid
 flowchart TD
-    MD1-.->|Pointer to callback|ECB
+    MF_OpenTrace{{"OpenTrace()"}}
+    MF_W4Break[/Wait for break/]
+    MF_Cleanup{{"CloseTrace()
+    ControlTraceW(EVENT_TRACE_CONTROL_STOP)"}}
+    MF_ProcessTrace{{"ProcessTrace()"}}
+    MF_START((Start))
+    MF_SetEDP["Set EVENT_DATA_PROPERTIES"]
+    MF_StartTrace{{"StartTrace()"}}
+    MF_EnableTrace{{"EnableTrace()"}}
+    MF_SetETLW["Set EVENT_TRACE_LOGFILEW"]
+    MF_CreateThread{{"CreateThread()"}}
+    MF_END((End))
+
     subgraph Main Flow
-    M1((Start))-->MB["Set EVENT_DATA_PROPERTIES"]
-    MB-->MC{{"StartTrace()"}}
-    MC-->MD{{"EnableTrace()"}}
-    MD-->MD1["Set EVENT_TRACE_LOGFILEW"]
-    MD1-->MD2{{"OpenTrace()"}}
-    MD2-->MD3{{"ProcessTrace()"}}
-    MD3~~~MD4{{"CloseTrace()"}}
-    MD4-->ME((End))
+    MF_START-->MF_SetEDP
+    MF_SetEDP-->MF_StartTrace
+    MF_StartTrace-->MF_EnableTrace
+    MF_EnableTrace-->MF_SetETLW
+    MF_SetETLW-->MF_OpenTrace
+    MF_OpenTrace-->MF_CreateThread
+        subgraph Thread
+        MF_ProcessTrace
+        MF_ProcessTrace-->MF_ProcessTrace
+        end
+    MF_CreateThread-->Thread
+    MF_CreateThread--->MF_W4Break
+    MF_W4Break-->MF_Cleanup
+    MF_Cleanup-->MF_END
     end
+
+    MF_SetETLW-.->|Pointer to callback|E_EventCallback
+
     subgraph Events
-    E((Event))-->ECB[Callback]
-    ECB-->E3[EVENT_RECORD]
-    E3-->E4{{"TdhGetEventInformation()
+    E_Start((Event))-->E_EventCallback[Callback]
+    E_EventCallback-->E_EventRecord[/EVENT_RECORD/]
+    E_EventRecord-->E_Process{{"TdhGetEventInformation()
     TdhGetProperty()"}}
-    E4-->E5[/Output/]
-    E5-->E6((End))
+    E_Process-->E_Output[\Output\]
+    E_Output-->E_End((End))
     end
 ```
