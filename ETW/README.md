@@ -1,6 +1,6 @@
 ```mermaid
 flowchart TD
-    MD1-.->ECB
+    MD1-.->|Set pointer to callback|ECB
     subgraph Main Flow
     M1((Start))-->MB["Set EVENT_DATA_PROPERTIES"]
     MB-->MC{{"StartTrace()"}}
