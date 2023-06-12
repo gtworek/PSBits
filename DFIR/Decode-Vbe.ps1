@@ -11,9 +11,13 @@ $cstr += "`t{_+e*5YthwpQWog?SLjU~,9J""!0fDrO-\v6xnP 2Eu|KT]%8}ZCHMG7^`$[&3ki;qIR
 $cstr += "`tnKoXxJ/e!u%^l5Q?~B, -|_Hy23+6f`$qW4hP{=:TgNjVGDtMr""R81c.zAE'\Z0ksmap;C*)}O9dL&IY][#``USwF7v(bi"
 $carr = @(0,2,1,0,2,1,2,1,1,2,1,2,0,1,2,1,0,1,2,1,0,0,2,1,1,2,0,1,2,1,1,2,0,0,1,2,1,2,1,0,1,0,0,2,1,0,1,2,0,1,2,1,0,0,2,1,1,0,0,2,1,0,1,2)
 
-$ds = ""
-$es = $EncodedString.Replace('@&',"`r")
-$es = $es.Replace('@$','$')
+$DecodedString = ""
+
+$es = $EncodedString.Replace('@&',"`n")
+$es = $es.Replace('@#',"`r")
+$es = $es.Replace('@*','>')
+$es = $es.Replace('@!','<')
+$es = $es.Replace('@$','@')
 
 for ($i = 0; $i -lt $es.Length; $i++)
 {
@@ -21,9 +25,8 @@ for ($i = 0; $i -lt $es.Length; $i++)
     $ec = $es[$i]
     $pc = $cstr[$ac].IndexOf($ec)
     $dc = ($cstr[$ac][($pc + 1) % $cstr[$ac].Length], $ec)[!($pc + 1)]
-    $ds += $dc
+    $DecodedString += $dc
 }
-$DecodedString = $ds.Replace("`r","`r`n")
 
 # Output leaves this way:
 Write-Host $DecodedString
