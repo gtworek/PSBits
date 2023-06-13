@@ -60,3 +60,4 @@ If you are not sure you can analyze GPOs, it's better to recreate everything fro
 20. Promote new DCs using standard procedure.
 21. Fix DNS Server addresses in your AD domain.
 22. Restore your non-DC roles you have identified at the beginning. Do it on non-DC machine, if possible.
+23. Should the DPAPI Backup keys for the domain be compromised, the recommendation is to create a new domain and migrate users to that new domain as [recommended by Microsoft](https://learn.microsoft.com/en-us/windows/win32/seccng/cng-dpapi-backup-keys-on-ad-domain-controllers). There currently is no officially supported way of changing or rotating these DPAPI backup keys on the domain controllers.
