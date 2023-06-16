@@ -27,6 +27,7 @@ TCHAR strBuf[ROW_LEN];
 LONG lCounter = 0;
 PTCHAR pszVolumeName;
 PTCHAR pszCsvFileName;
+BOOL bV4 = FALSE;
 
 
 PTCHAR TimeStampToIso8601(
@@ -260,13 +261,22 @@ int _tmain(int argc, PTCHAR argv[])
 					return (int)GetLastError();
 				}
 				break; //ver 3
-
+			case 4:
+				if (!bV4)
+				{
+					//print only once
+					_tprintf(TEXT("Record V4 spotted. All such records will be ignored.\r\n"));
+					bV4 = TRUE;
+				}
+				break; //ver 4
 			default:
 				_tprintf(
-					TEXT("Unknown record version. Ver. %i.%i. Length: %i\r\n"),
+					TEXT("Unknown record version. Ver. %i.%i. Length: %i. Exiting.\r\n"),
 					UsnRecordV3->MajorVersion,
 					UsnRecordV3->MinorVersion,
 					UsnRecordV3->RecordLength);
+				CloseHandle(hUsnFileHandle);
+				CloseHandle(hCsvFileHandle);
 				return ERROR_UNSUPPORTED_TYPE;
 			}
 			UsnRecordV3 = Add2Ptr(UsnRecordV3, UsnRecordV3->RecordLength); //assuming proper alignment
