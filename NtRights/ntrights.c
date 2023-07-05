@@ -26,6 +26,7 @@ int wmain(int argc, WCHAR** argv, WCHAR** envp)
 	{
 		wprintf(L"Usage: ntrights user [privilege]\r\n");
 		wprintf(L"E.g.: ntrights .\\administrators SeBackupPrivilege\r\n");
+		return -1;
 	}
 
 	NTSTATUS Status;
