@@ -106,7 +106,7 @@ DWORD SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
 }
 
 
-int _tmain(void)
+int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
 	HANDLE currentTokenHandle = NULL;
 	BOOL bRes;
@@ -153,24 +153,49 @@ int _tmain(void)
 		return (int)RtlNtStatusToDosError(Status);
 	}
 
-	while (CurrentOffset < ulNeeded)
+	if (argc > 1)
 	{
-		psysCurrentValue = (PSYSENV_VARIABLE_AND_VALUE)Add2Ptr(pBuf, CurrentOffset);
-		wchar_t pwszGuid[GUIDLEN]; 
-		if (0 == StringFromGUID2(&psysCurrentValue->VendorGuid, pwszGuid, _countof(pwszGuid)))
+		HANDLE hFile;
+		hFile = CreateFile(argv[1],GENERIC_WRITE, 0,NULL,CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (INVALID_HANDLE_VALUE != hFile)
 		{
-			_tprintf(_T("ERROR calling StringFromGUID2()\r\n"));
-			return -1;
+			bRes = WriteFile(hFile, pBuf, ulNeeded, NULL, NULL);
+			if (bRes)
+			{
+				_tprintf(_T("File written.\r\n"));
+			}
+			else
+			{
+				_tprintf(_T("Warning: WriteFile() returned %d\r\n"), GetLastError());
+			}
+			CloseHandle(hFile);
 		}
-
-		_tprintf(_T("%ls 0x%08x %ls\r\n"), pwszGuid, psysCurrentValue->Attributes, psysCurrentValue->Name);
-
-		DumpHex(Add2Ptr(psysCurrentValue, psysCurrentValue->ValueOffset), psysCurrentValue->ValueLength);
-
-		if (0 == psysCurrentValue->NextEntryOffset)
+		else
 		{
-			break;
+			_tprintf(_T("Warning: CreateFile() returned %d\r\n"), GetLastError());
 		}
-		CurrentOffset += psysCurrentValue->NextEntryOffset;
+	}
+	else
+	{
+		while (CurrentOffset < ulNeeded)
+		{
+			psysCurrentValue = (PSYSENV_VARIABLE_AND_VALUE)Add2Ptr(pBuf, CurrentOffset);
+			wchar_t pwszGuid[GUIDLEN];
+			if (0 == StringFromGUID2(&psysCurrentValue->VendorGuid, pwszGuid, _countof(pwszGuid)))
+			{
+				_tprintf(_T("ERROR calling StringFromGUID2()\r\n"));
+				return -1;
+			}
+
+			_tprintf(_T("%ls 0x%08x %ls\r\n"), pwszGuid, psysCurrentValue->Attributes, psysCurrentValue->Name);
+
+			DumpHex(Add2Ptr(psysCurrentValue, psysCurrentValue->ValueOffset), psysCurrentValue->ValueLength);
+
+			if (0 == psysCurrentValue->NextEntryOffset)
+			{
+				break;
+			}
+			CurrentOffset += psysCurrentValue->NextEntryOffset;
+		}
 	}
 }
