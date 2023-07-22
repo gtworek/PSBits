@@ -1,0 +1,32 @@
+//------------------------------------------------
+//--- 010 Editor v14.0beta1 Binary Template
+//------------------------------------------------
+
+typedef struct _XVARIABLE_NAME_AND_VALUE
+{
+	ULONG NextEntryOffset <fgcolor=cGray>;
+	ULONG ValueOffset <fgcolor=cGray>;
+	ULONG ValueLength <fgcolor=cGray>;
+	ULONG Attributes;
+	GUID VendorGuid;
+	wchar_t Name[] <fgcolor=cGreen>;
+    UCHAR Value[ValueLength] <fgcolor=cLtBlue>;
+    if (ValueLength+ValueOffset<NextEntryOffset)
+    {
+        UCHAR ValuePadding[NextEntryOffset-(ValueLength+ValueOffset)]  <fgcolor=cGray>;
+    }
+};
+
+local int i;
+
+do
+{
+    i = FTell();
+    _XVARIABLE_NAME_AND_VALUE var <read=Name>;
+    if (0 == var.NextEntryOffset)
+    {
+        break;
+    }
+    FSeek(i+var.NextEntryOffset);
+} while (TRUE);
+
