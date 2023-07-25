@@ -1,4 +1,4 @@
-// https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shaddtorecentdocs
+# https://learn.microsoft.com/en-us/windows/win32/api/shlobj_core/nf-shlobj_core-shaddtorecentdocs
 $TypeDef = @"
     using System;
     using System.Runtime.InteropServices;
