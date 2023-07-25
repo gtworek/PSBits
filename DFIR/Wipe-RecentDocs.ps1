@@ -7,7 +7,7 @@ $TypeDef = @"
 		[DllImport("Shell32.dll", SetLastError=true)]
 		public static extern void SHAddToRecentDocs(
 			uint uFlags,
-            IntPtr pv);
+            		IntPtr pv);
 	}
 "@
 Add-Type -TypeDefinition $TypeDef
