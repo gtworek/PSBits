@@ -11,6 +11,8 @@ The goal is to:
 Versions (so far, will add more gradually):
   - v1: a simple process, downloading itself (same hash), launching downloaded content and terminating. Keeping number of processes low, due to parent process termination - https://www.virustotal.com/gui/file/0eb77a3b31656744ed3511085a1aa1369790b24577fdce2f2501786806a9c182
   - v2: same as v1, but a bit less waiting between cycles and DO NOT terminating unless child process exists. Leading effectively to large number of processes - https://www.virustotal.com/gui/file/4924802fc291094c36e123f0d072c0207157a60ac85bd3275766d00691958ced
-  - v3: same as v2, but each downloaded copy is binary different (last 4 bytes change randomly each time), leading to unique file hashes.
+  - v3: same as v2, but each downloaded copy is binary different (last 4 bytes change randomly each time), leading to unique file hashes. I am providing the source code, but the 'live' service replaces first 8 bytes of each file with `FAKEFAKE`
+  - v4: exe is compiled dynamically (TCC), with unique strings (for unique file hashes) and different parts of code, such as imports, included/excluded randomly to manipulate imphash etc.
+
 
 Links to VT will be added with some delay to limit interference between automated and human-driven actions.
