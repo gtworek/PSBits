@@ -1,6 +1,6 @@
 Just playing with AV, detections, sandboxes and VT. The idea is to make it more sophisticated each round, but let's see how it goes in practice. I plan to randomly change IPs and domain names between rounds.
 
-**NOT A SINGLE BIT OF MY CODE IS INTENTIONALLY MALICIOUS. THE WORST THING YOU CAN EXPECT IS SOME WASTE OF BANDTWITH/MEMORY/CPU.**
+**NOT A SINGLE BIT OF MY CODE IS INTENTIONALLY MALICIOUS. THE WORST THING YOU CAN EXPECT IS SOME WASTE OF BANDWITH/MEMORY/CPU.**
 
 The goal is to:
   - observe running and downloading my code across the world,
