@@ -6,6 +6,7 @@
 #define READ_JOURNAL_BUFFER_SIZE (1024 * 1024) //buffer for processing journal entries
 #define ISO_DATETIME_LEN 26
 #define MAX_SIZE_LEN 16 //should be enough
+#define TICKS_IN_1SECOND (10*1000*1000)
 
 HANDLE hUsnFileHandle = INVALID_HANDLE_VALUE;
 BOOL bStatus;
@@ -15,10 +16,12 @@ PUSN_RECORD_V3 UsnRecordV3;
 DWORD dwBytesReturned;
 PVOID lpBuffer = NULL;
 TCHAR strIsoDateTime[ISO_DATETIME_LEN];
-TCHAR strMaxSize[MAX_SIZE_LEN]; 
+TCHAR strIsoDateTime2[ISO_DATETIME_LEN];
+TCHAR strMaxSize[MAX_SIZE_LEN];
 LONG lCounter = 0;
 PTCHAR pszVolumeName;
 LARGE_INTEGER liMinDate;
+LARGE_INTEGER liLastTimestamp = {0};
 
 
 __inline PUSN_RECORD_V3 NextUsnRecord(PUSN_RECORD_V3 currentRecord)
@@ -44,9 +47,11 @@ PTCHAR TimeStampToIso8601(
 	{
 		return NULL;
 	}
+	memset(pszBuffer, 0, ISO_DATETIME_LEN);
 	if (FileTimeToSystemTime((PFILETIME)timeStamp, &systemTime))
 	{
-		StringCchPrintf(pszBuffer,
+		StringCchPrintf(
+			pszBuffer,
 			ISO_DATETIME_LEN,
 			TEXT("%04i-%02i-%02iT%02i:%02i:%02i.%03iZ"),
 			systemTime.wYear,
@@ -158,7 +163,9 @@ int _tmain(int argc, PTCHAR argv[])
 	_tprintf(TEXT(" MinSupportedMajorVersion : %u\r\n"), UsnJournalData.MinSupportedMajorVersion);
 	_tprintf(TEXT(" MaxSupportedMajorVersion : %u\r\n"), UsnJournalData.MaxSupportedMajorVersion);
 
-	_tprintf(TEXT(" \r\n Human readable maximum size: %s\r\n"), DwordLongToHuman(UsnJournalData.MaximumSize, strMaxSize));
+	_tprintf(
+		TEXT(" \r\n Human readable maximum size: %s\r\n"),
+		DwordLongToHuman(UsnJournalData.MaximumSize, strMaxSize));
 
 
 	ReadUsnJournalDataV1.UsnJournalID = UsnJournalData.UsnJournalID;
@@ -168,7 +175,7 @@ int _tmain(int argc, PTCHAR argv[])
 	ReadUsnJournalDataV1.MinMajorVersion = 2;
 	ReadUsnJournalDataV1.MaxMajorVersion = 4;
 
-	lpBuffer = (PVOID)malloc(READ_JOURNAL_BUFFER_SIZE); //no free, good enough for this code.
+	lpBuffer = malloc(READ_JOURNAL_BUFFER_SIZE); //no free, good enough for this code.
 	if (!lpBuffer)
 	{
 		_tprintf(TEXT("\r\nERROR: Cannot allocate buffer.\r\n"));
@@ -199,7 +206,9 @@ int _tmain(int argc, PTCHAR argv[])
 			}
 			else
 			{
-				_tprintf(TEXT("\r\nERROR: DeviceIoControl(FSCTL_READ_UNPRIVILEGED_USN_JOURNAL...) returned %u\r\n"), GetLastError());
+				_tprintf(
+					TEXT("\r\nERROR: DeviceIoControl(FSCTL_READ_UNPRIVILEGED_USN_JOURNAL...) returned %u\r\n"),
+					GetLastError());
 				return (int)GetLastError();
 			}
 		}
@@ -216,22 +225,35 @@ int _tmain(int argc, PTCHAR argv[])
 			lCounter++;
 			switch (UsnRecordV3->MajorVersion) //ver 2, 3, and 4 have the same structure fields at the beginning. 
 			{
-			case 3: //only ver 3 is supported, as it is the only one happening on disks I had a chance to analyze.
+			case 3: //the basic one
 				liMinDate.QuadPart = min(liMinDate.QuadPart, UsnRecordV3->TimeStamp.QuadPart);
+				if (liLastTimestamp.QuadPart > UsnRecordV3->TimeStamp.QuadPart + TICKS_IN_1SECOND)
+				{
+					_tprintf(
+						TEXT(
+							"\r\nDate/time manipulation possible! USN: %lld. Current Timestamp: %s, previous Timestamp: %s\r\n"),
+						UsnRecordV3->Usn,
+						TimeStampToIso8601(&UsnRecordV3->TimeStamp, strIsoDateTime),
+						TimeStampToIso8601(&liLastTimestamp, strIsoDateTime2));
+				}
+				liLastTimestamp.QuadPart = UsnRecordV3->TimeStamp.QuadPart;
 				break; //ver 3
+			case 4:
+				break; //may happen, but has no timestamp
 			default:
-				_tprintf(TEXT("Unknown record version. Ver. %i.%i. Length: %i\r\n"),
+				_tprintf(
+					TEXT("Unknown record version. Ver. %i.%i. Length: %i\r\n"),
 					UsnRecordV3->MajorVersion,
 					UsnRecordV3->MinorVersion,
 					UsnRecordV3->RecordLength);
-				return ERROR_UNSUPPORTED_TYPE;
+			// return ERROR_UNSUPPORTED_TYPE; - ignoring wrong record types.
 				break;
 			}
 			UsnRecordV3 = NextUsnRecord(UsnRecordV3);
 		} //inner while
 		ReadUsnJournalDataV1.StartUsn = *(USN*)lpBuffer;
 	} //while true
-	_tprintf(TEXT("Done. %ld entries processed.\r\n\r\n"), lCounter);
+	_tprintf(TEXT("\r\nDone. %ld entries processed.\r\n\r\n"), lCounter);
 	if (MAXLONGLONG == liMinDate.QuadPart)
 	{
 		_tprintf(_T("Cannot find the oldest entry...\r\n"));
