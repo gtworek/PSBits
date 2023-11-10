@@ -9,7 +9,7 @@ $filesToUpdate = @("libcrypto-3-x64.dll", "libssl-3-x64.dll", "libcrypto-3.dll",
 $DebugPreference = "Continue"
 
 Write-Debug ("Searching for files. It will take some time...") 
-allFiles = Get-ChildItem -Include $filesToUpdate -Path c:\ -Recurse -File -Force -ErrorAction SilentlyContinue
+$allFiles = Get-ChildItem -Include $filesToUpdate -Path c:\ -Recurse -File -Force -ErrorAction SilentlyContinue
 $newFiles = Get-ChildItem -Include $filesToUpdate -Path $sourceDir -Recurse -File -Force -ErrorAction SilentlyContinue
 
 foreach ($newFile in $newFiles)
