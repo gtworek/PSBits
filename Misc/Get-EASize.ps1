@@ -1,3 +1,6 @@
+
+##### Better, more complete version available at https://github.com/gtworek/PSBits/blob/master/Misc/Get-EAs.ps1
+
 function Get-EASize
 {    
     param([string]$FileName)
