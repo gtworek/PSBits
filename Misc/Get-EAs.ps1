@@ -127,7 +127,6 @@ function Get-EAs
 }
 
 
-
 ############
 ## USAGE: ##
 ############
@@ -155,8 +154,6 @@ do
         $eaName += [char]($EAs[$offset + 8 + $i])
     }
     Write-Host "Ea Name:" $eaName
-
-
 
     $eaValue = @()
     $eaValueLength = $EAs[$offset+6] + ([uint32]$EAs[$offset+7] -shl 8)
