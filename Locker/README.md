@@ -9,4 +9,5 @@ The file is (obviously!) digitally signed.
 The exe creates "secret.txt" on your desktop, and the challenge is to read its content. Sounds simple, but it depends actually on your skills and knowledge. Try it: run the exe, read the file, enjoy!
 
 # The source code:
-I will publish the source code (~400LoC of C) in a couple of days. Publishing it right now would spoil the fun :P 
+~~I will publish the source code (~400LoC of C) in a couple of days. Publishing it right now would spoil the fun :P ~~
+Enjoy the C source code :)
