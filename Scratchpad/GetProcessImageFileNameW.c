@@ -6,9 +6,9 @@
 DWORD
 WINAPI
 GetProcessImageFileNameW(
-	__in HANDLE hProcess,
-	__out_ecount(nSize) LPWSTR lpImageFileName,
-	__in DWORD nSize
+	HANDLE hProcess,
+	LPWSTR lpImageFileName,
+	DWORD nSize
 );
 
 int wmain(int argc, WCHAR** argv, WCHAR** envp)
