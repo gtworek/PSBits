@@ -1,6 +1,6 @@
 $WhiteList = "10.10.10.10","10.10.10.11" #array of IP addresses you never want to block. Feel free to initialize it with Get-Content or whatever
 $FWRuleName = 'WebOffendersBlock' # name of the rule in firewall
-$blockThreshold = 50 # number of non-200 results per one analysis. If there is more per IP, the IP will be blocked.
+$blockThreshold = 50 # number of 404 results per one analysis. If there is more per IP, the IP will be blocked.
 
 $statusFieldNameStatus = 'sc-status'
 $fieldNumStatus = -1
