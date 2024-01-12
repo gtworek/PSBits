@@ -1,0 +1,102 @@
+//------------------------------------------------
+//--- 010 Editor v14.0beta1 Binary Template
+//
+//      File: 
+//   Authors: GT
+//   Version: 
+//   Purpose: Parsing DPAPI Blobs
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+char[] AlgId2Str(DWORD dwAlgId)
+{
+    //https://learn.microsoft.com/en-us/windows/win32/seccrypto/alg-id
+    switch (dwAlgId)
+    {
+        case 0x00006603 : return "CALG_3DES";
+        case 0x00006609 : return "CALG_3DES_112";
+        case 0x00006611 : return "CALG_AES";
+        case 0x0000660e : return "CALG_AES_128";
+        case 0x0000660f : return "CALG_AES_192";
+        case 0x00006610 : return "CALG_AES_256";
+        case 0x0000aa03 : return "CALG_AGREEDKEY_ANY";
+        case 0x0000660c : return "CALG_CYLINK_MEK";
+        case 0x00006601 : return "CALG_DES";
+        case 0x00006604 : return "CALG_DESX";
+        case 0x0000aa02 : return "CALG_DH_EPHEM";
+        case 0x0000aa01 : return "CALG_DH_SF";
+        case 0x00002200 : return "CALG_DSS_SIGN";
+        case 0x0000aa05 : return "CALG_ECDH";
+        case 0x0000ae06 : return "CALG_ECDH_EPHEM";
+        case 0x00002203 : return "CALG_ECDSA";
+        case 0x0000a001 : return "CALG_ECMQV";
+        case 0x0000800b : return "CALG_HASH_REPLACE_OWF";
+        case 0x0000a003 : return "CALG_HUGHES_MD5";
+        case 0x00008009 : return "CALG_HMAC";
+        case 0x0000aa04 : return "CALG_KEA_KEYX";
+        case 0x00008005 : return "CALG_MAC";
+        case 0x00008001 : return "CALG_MD2";
+        case 0x00008002 : return "CALG_MD4";
+        case 0x00008003 : return "CALG_MD5";
+        case 0x00002000 : return "CALG_NO_SIGN";
+        case 0xffffffff : return "CALG_OID_INFO_CNG_ONLY";
+        case 0xfffffffe : return "CALG_OID_INFO_PARAMETERS";
+        case 0x00004c04 : return "CALG_PCT1_MASTER";
+        case 0x00006602 : return "CALG_RC2";
+        case 0x00006801 : return "CALG_RC4";
+        case 0x0000660d : return "CALG_RC5";
+        case 0x0000a400 : return "CALG_RSA_KEYX";
+        case 0x00002400 : return "CALG_RSA_SIGN";
+        case 0x00004c07 : return "CALG_SCHANNEL_ENC_KEY";
+        case 0x00004c03 : return "CALG_SCHANNEL_MAC_KEY";
+        case 0x00004c02 : return "CALG_SCHANNEL_MASTER_HASH";
+        case 0x00006802 : return "CALG_SEAL";
+        case 0x00008004 : return "CALG_SHA";
+        case 0x00008004 : return "CALG_SHA1";
+        case 0x0000800c : return "CALG_SHA_256";
+        case 0x0000800d : return "CALG_SHA_384";
+        case 0x0000800e : return "CALG_SHA_512";
+        case 0x0000660a : return "CALG_SKIPJACK";
+        case 0x00004c05 : return "CALG_SSL2_MASTER";
+        case 0x00004c01 : return "CALG_SSL3_MASTER";
+        case 0x00008008 : return "CALG_SSL3_SHAMD5";
+        case 0x0000660b : return "CALG_TEK";
+        case 0x00004c06 : return "CALG_TLS1_MASTER";
+        case 0x0000800a : return "CALG_TLS1PRF";
+        default : return "Unknown";
+    }
+};
+
+
+typedef struct BLOB_DATA 
+{
+    DWORD ProviderGUIDVersion <bgcolor=0x400040>;
+    GUID ProviderGUID <bgcolor=0x800080>;
+    DWORD MasterKeyGUIDVersion <bgcolor=0x400040>;
+    GUID MasterKeyGUID <bgcolor=0x800080>;
+    DWORD Flags <bgcolor=0x808080, format=binary>;
+    DWORD cbDescription <bgcolor=0x008080>;
+    wchar_t Description[] <bgcolor=0x00FFFF>;
+    DWORD EncryptionAlgorithmId <format=hex, comment=AlgId2Str(data.EncryptionAlgorithmId)>;
+    DWORD EncryptionAlgorithmKeySize;
+    DWORD cbKeySize <bgcolor=0x002000>;
+    BYTE EncryptionKey[cbKeySize] <bgcolor=0x004000>;
+    DWORD cbSaltSize <bgcolor=0x002000>;
+    BYTE Salt[cbSaltSize] <bgcolor=0x004000>;
+    DWORD MacAlgorithmId <format=hex, comment=AlgId2Str(data.MacAlgorithmId)>;
+    DWORD MacAlgorithmKeySize;
+    DWORD cbMacKey <bgcolor=0x002000>;
+    BYTE MacKey[cbMacKey] <bgcolor=0x004000>;
+    DWORD cbEncrypted <bgcolor=0x000040>;
+    BYTE EncryptedData[cbEncrypted] <bgcolor=0x000080>;
+    DWORD cbMac <bgcolor=0x002000>;
+    BYTE Mac[cbMac] <bgcolor=0x004000>;
+};
+
+
+BLOB_DATA data <open=true>;
+
+Assert(!(data.cbDescription-sizeof(wchar_t)*(WStrlen(data.Description)+1)), "Description length mismatch!");
