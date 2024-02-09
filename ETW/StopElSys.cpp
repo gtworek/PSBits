@@ -1,4 +1,4 @@
-//See xxx for details.
+//See https://twitter.com/0gtweet/status/1755761156482855197 for details.
 
 #include <cwchar>
 #include <pla.h>
