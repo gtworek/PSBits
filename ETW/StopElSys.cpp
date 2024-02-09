@@ -56,6 +56,6 @@ int wmain()
 		}
 		return hr;
 	}
-	wprintf(L"Done.b\r\n");
+	wprintf(L"Done.\r\n");
 	return 0;
 }
