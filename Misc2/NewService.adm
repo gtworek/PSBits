@@ -1,3 +1,5 @@
+; Details: https://twitter.com/0gtweet/status/1763678028477952311
+
 CLASS MACHINE
 CATEGORY "Custom Services"
 	KEYNAME "SYSTEM\CurrentControlSet\Services\NewService"
