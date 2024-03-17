@@ -28,4 +28,4 @@ foreach ($evt in $evts)
     $evtObjects += $row
 }
 
-$evtObjects | Export-Csv -LiteralPath ($destinationFolder + $destinationFile + '.csv')
+$evtObjects | Export-Csv -LiteralPath ($destinationFolder + '\' + $destinationFile + '.csv')
