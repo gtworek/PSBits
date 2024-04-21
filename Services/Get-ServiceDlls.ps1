@@ -18,13 +18,19 @@ foreach ($key in $keys)
             if ($null -ne $ServiceDll)
             {
                 Write-Host ($key.PsChildName+"`t"+$ServiceDll+"`t") -NoNewline
+                $sig = Get-AuthenticodeSignature $ServiceDll
                 if ((Get-AuthenticodeSignature $ServiceDll).IsOSBinary) 
                 {
                     Write-Host -ForegroundColor Green "OS Binary"
+                    Continue
+                }
+                if ($sig.Status -eq 'Valid')
+                {
+                    Write-Host -ForegroundColor Yellow "Signed by" $sig.SignerCertificate.Subject
                 }
                 else
                 {
-                    Write-Host -ForegroundColor red "External Binary"
+                    Write-Host -ForegroundColor Red "Unsigned"
                 }
             }
         }
