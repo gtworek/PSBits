@@ -18,10 +18,12 @@ foreach ($f in $d)
         {
             continue
         }
-        Write-Host -ForegroundColor Yellow $f.FullName "Signed by" $sig.SignerCertificate.Subject
+        $sha1 = (Get-FileHash $f.FullName -Algorithm SHA1).Hash
+        Write-Host -ForegroundColor Yellow $sha1 $f.FullName "Signed by" $sig.SignerCertificate.Subject
     }
     else
     {
-        Write-Host -ForegroundColor Red $f.FullName "Unsigned"
+        $sha1 = (Get-FileHash $f.FullName -Algorithm SHA1).Hash
+        Write-Host -ForegroundColor Red $sha1 $f.FullName "Unsigned"
     }
 }
