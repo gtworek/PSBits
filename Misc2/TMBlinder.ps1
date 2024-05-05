@@ -1,3 +1,5 @@
+# see https://twitter.com/0gtweet/status/1787113113109643435
+
 $source = @"
 using System;
 using System.Runtime.InteropServices;
