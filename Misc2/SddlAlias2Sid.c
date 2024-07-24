@@ -34,6 +34,8 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		return (int)dwErr;
 	}
 
+	_tprintf(_T("\"%s\" = %s, "), argv[1], ptszSidStr);
+
 	DWORD dwNameLen         = 0;
 	DWORD dwDomainLen       = 0;
 	SID_NAME_USE snuSidType = SidTypeUnknown;
@@ -43,7 +45,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		dwErr = GetLastError();
 		if (dwErr != ERROR_INSUFFICIENT_BUFFER)
 		{
-			_tprintf(_T("LookupAccountSid(#1) failed with error %u\r\n"), dwErr);
+			_tprintf(_T("\r\nLookupAccountSid(#1) failed with error %u\r\n"), dwErr);
 			return (int)dwErr;
 		}
 	}
@@ -53,7 +55,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	if (ptszName == NULL)
 	{
 		dwErr = GetLastError();
-		_tprintf(_T("LocalAlloc(dwNameLen) failed with error %u\r\n"), dwErr);
+		_tprintf(_T("\r\nLocalAlloc(dwNameLen) failed with error %u\r\n"), dwErr);
 		return (int)dwErr;
 	}
 
@@ -62,7 +64,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	if (ptszDomain == NULL)
 	{
 		dwErr = GetLastError();
-		_tprintf(_T("LocalAlloc(dwDomainLen) failed with error %u\r\n"), dwErr);
+		_tprintf(_T("\r\nLocalAlloc(dwDomainLen) failed with error %u\r\n"), dwErr);
 		return (int)dwErr;
 	}
 
@@ -70,11 +72,10 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	if (bRes == FALSE)
 	{
 		dwErr = GetLastError();
-		_tprintf(_T("LookupAccountSid(#2) failed with error %u\r\n"), dwErr);
+		_tprintf(_T("\r\nLookupAccountSid(#2) failed with error %u\r\n"), dwErr);
 		return (int)dwErr;
 	}
 
-	_tprintf(_T("\"%s\" = %s, "), argv[1], ptszSidStr);
 	if (_tcslen(ptszDomain) > 0)
 	{
 		_tprintf(_T("%s\\%s"), ptszDomain, ptszName);
