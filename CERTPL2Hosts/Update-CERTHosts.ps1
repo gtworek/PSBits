@@ -1,5 +1,5 @@
 ﻿
-$HoleCertURL = "https://hole.cert.pl/domains/domains_hosts.txt" # skąd pobieramy dane
+$HoleCertURL = "https://hole.cert.pl/domains/v2/domains_hosts.txt" # skąd pobieramy dane
 $HostsFile = $env:windir+"\System32\drivers\etc\hosts." # gdzie je wpisujemy
 $BackupFile = ($env:windir+"\System32\drivers\etc\hosts_holecert.bak") # backup
 $HoleCertStart = "### Start of "+$HoleCertURL+" content ###" # znacznik początku danych z CERT
