@@ -10,7 +10,9 @@ $fieldNumCIP = -1
 $fileName = "C:\inetpub\logs\LogFiles\W3SVC2\u_ex231109.log"
 
 $ips = @{}
-$Reader = New-Object System.IO.StreamReader($fileName)
+
+$fileStream = [System.IO.FileStream]::new($fileName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+$Reader = [System.IO.StreamReader]::new($fileStream)
 while($Line = $Reader.ReadLine()) 
 {
     if ($Line.StartsWith('#Fields: '))
