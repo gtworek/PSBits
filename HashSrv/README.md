@@ -13,6 +13,6 @@ The checklist for opening/publishing the solution:
 - [ ] IIS deployment script
 - [ ] sqlite preparation
 - [ ] NSRL DB automated creation
-- [x] PowerShell script checking hashes in local DB
+- [x] PowerShell script checking hashes in local DB - [Check-SHA256InSQLite.ps1](Check-SHA256InSQLite.ps1)
 - [ ] PowerShell script adding hashes to local DB
 - [ ] Online solution for adding hashes - never required it, not sure if it’s really needed
