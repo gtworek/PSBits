@@ -2,6 +2,25 @@
 // This code is a simple example of how to use ETW to capture UDP packets without opening a port.
 // https://x.com/0gtweet/status/1881444173133562052
 
+/*
+UDP Sender in PowerShell:
+
+$ipAddress = "192.168.0.100"
+$port = 12345
+$message = "Hello, UDP!"
+
+$udpClient = New-Object System.Net.Sockets.UdpClient
+
+while ($true) 
+{
+    $bytes = [System.Text.Encoding]::ASCII.GetBytes($message)
+    $udpClient.Send($bytes, $bytes.Length, $ipAddress, $port)
+    Start-Sleep -Milliseconds 500    
+}
+*/
+
+
+
 #include <Windows.h>
 #include <tchar.h>
 #include <evntrace.h>
