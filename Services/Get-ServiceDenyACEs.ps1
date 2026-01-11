@@ -49,7 +49,6 @@ foreach ($key in $keys)
         if (!$lcFound)
         {
             Write-Host $key.PSChildName ' ' $sddl
-            break
         }
     }
 }
