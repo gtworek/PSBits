@@ -2,7 +2,7 @@
 # THANK YOU @ASwisstone https://x.com/ASwisstone ! :)
 
 $content = $null
-$content = (Invoke-WebRequest https://ccadb-public.secure.force.com/microsoft/IncludedCACertificateReportForMSFTCSV).Content
+$content = (Invoke-WebRequest https://ccadb.my.salesforce-sites.com/microsoft/IncludedCACertificateReportForMSFTCSV).Content
 
 if (!$content)
 {
