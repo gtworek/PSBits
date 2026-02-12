@@ -1,7 +1,7 @@
 # The script goes through "$hosts" and checks the Secure Boot update status.
 # Theory: https://support.microsoft.com/en-au/topic/registry-key-updates-for-secure-boot-windows-devices-with-it-managed-updates-a7be69c9-4634-42e1-9ca1-df06f43f360d
 
-$hosts = @("SFCLS2GT", "server_1", "another_machine")
+$hosts = @("some_machine", "server_1", "another_machine")
 
 foreach ($hostname in $hosts)
 {
